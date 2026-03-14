@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   SafeAreaView,
   ScrollView,
   Text,
@@ -24,8 +25,8 @@ export default function TelaDetalhesManutencao() {
   const [manutencao, setManutencao] = useState<Manutencao | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [excluindo, setExcluindo] = useState(false);
+  const [menuAcoesAberto, setMenuAcoesAberto] = useState(false);
   const [alertaExclusaoAberto, setAlertaExclusaoAberto] = useState(false);
-  const [alertaSucessoAberto, setAlertaSucessoAberto] = useState(false);
   const [alertaErroAberto, setAlertaErroAberto] = useState(false);
 
   useEffect(() => {
@@ -55,6 +56,7 @@ export default function TelaDetalhesManutencao() {
       return;
     }
 
+    setMenuAcoesAberto(false);
     router.push(`/manutencoes/editar?id=${id}`);
   }
 
@@ -63,6 +65,7 @@ export default function TelaDetalhesManutencao() {
       return;
     }
 
+    setMenuAcoesAberto(false);
     setAlertaExclusaoAberto(true);
   }
 
@@ -72,7 +75,7 @@ export default function TelaDetalhesManutencao() {
     try {
       await excluirManutencao(manutencaoId);
       setAlertaExclusaoAberto(false);
-      setAlertaSucessoAberto(true);
+      router.replace("/(abas)/manutencoes");
     } catch (erro) {
       console.error("Erro ao excluir manutenção:", erro);
       setAlertaExclusaoAberto(false);
@@ -82,16 +85,12 @@ export default function TelaDetalhesManutencao() {
     }
   }
 
-  function fecharAlertaSucesso(): void {
-    setAlertaSucessoAberto(false);
-    router.replace("/(abas)/manutencoes");
-  }
-
   if (carregando) {
     return (
       <>
         <SafeAreaView className="flex-1 items-center justify-center bg-slate-950">
-          <Text className="text-base text-slate-300">
+          <ActivityIndicator size="large" color="#ffffff" />
+          <Text className="mt-4 text-base text-slate-300">
             Carregando manutenção...
           </Text>
         </SafeAreaView>
@@ -112,16 +111,6 @@ export default function TelaDetalhesManutencao() {
               void excluir(id);
             }
           }}
-        />
-
-        <AlertaApp
-          visivel={alertaSucessoAberto}
-          titulo="Sucesso"
-          mensagem="Manutenção excluída com sucesso."
-          variante="sucesso"
-          textoConfirmar="Fechar"
-          aoFechar={fecharAlertaSucesso}
-          aoConfirmar={fecharAlertaSucesso}
         />
 
         <AlertaApp
@@ -167,16 +156,6 @@ export default function TelaDetalhesManutencao() {
         />
 
         <AlertaApp
-          visivel={alertaSucessoAberto}
-          titulo="Sucesso"
-          mensagem="Manutenção excluída com sucesso."
-          variante="sucesso"
-          textoConfirmar="Fechar"
-          aoFechar={fecharAlertaSucesso}
-          aoConfirmar={fecharAlertaSucesso}
-        />
-
-        <AlertaApp
           visivel={alertaErroAberto}
           titulo="Erro"
           mensagem="Não foi possível excluir a manutenção."
@@ -192,80 +171,117 @@ export default function TelaDetalhesManutencao() {
   return (
     <>
       <SafeAreaView className="flex-1 bg-slate-950">
-        <ScrollView contentContainerClassName="px-5 pt-14 pb-6">
-          <View className="mb-6 flex-row items-center justify-between">
-            <TouchableOpacity
-              className="h-10 w-10 items-center justify-center rounded-full bg-slate-900"
-              onPress={voltar}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="arrow-back" size={22} color="#ffffff" />
-            </TouchableOpacity>
+        <View className="flex-1">
+          <ScrollView contentContainerClassName="px-5 pt-14 pb-6">
+            <View className="relative">
+              <View className="mb-6 flex-row items-center justify-between">
+                <TouchableOpacity
+                  className="h-10 w-10 items-center justify-center rounded-full bg-slate-900"
+                  onPress={voltar}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="arrow-back" size={22} color="#ffffff" />
+                </TouchableOpacity>
 
-            <View className="flex-1 px-4">
-              <Text className="text-center text-3xl font-bold text-white">
-                Manutenção
-              </Text>
-              <Text className="mt-1 text-center text-base text-slate-300">
-                Detalhes do registro
-              </Text>
+                <View className="flex-1 px-4">
+                  <Text className="text-center text-3xl font-bold text-white">
+                    Manutenção
+                  </Text>
+                  <Text className="mt-1 text-center text-base text-slate-300">
+                    Detalhes do registro
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  className="h-10 w-10 items-center justify-center"
+                  onPress={() =>
+                    setMenuAcoesAberto((estadoAtual) => !estadoAtual)
+                  }
+                  activeOpacity={0.8}
+                >
+                  <Ionicons
+                    name="ellipsis-vertical"
+                    size={20}
+                    color="#ffffff"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <View className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+                <Text className="text-xl font-bold text-white">
+                  {manutencao.tipo}
+                </Text>
+
+                <View className="mt-4 gap-4">
+                  <LinhaInformacao
+                    titulo="Data"
+                    valor={formatarData(manutencao.data)}
+                  />
+                  <LinhaInformacao
+                    titulo="Quilometragem"
+                    valor={`${manutencao.quilometragem.toLocaleString("pt-BR")} km`}
+                  />
+                  <LinhaInformacao
+                    titulo="Valor"
+                    valor={
+                      typeof manutencao.custo === "number"
+                        ? formatarBRL(manutencao.custo)
+                        : "Não informado"
+                    }
+                  />
+                  <LinhaInformacao
+                    titulo="Observação"
+                    valor={
+                      manutencao.observacao
+                        ? manutencao.observacao
+                        : "Não informada"
+                    }
+                  />
+                </View>
+              </View>
             </View>
+          </ScrollView>
 
-            <View className="h-10 w-10" />
-          </View>
-
-          <View className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
-            <Text className="text-xl font-bold text-white">
-              {manutencao.tipo}
-            </Text>
-
-            <View className="mt-4 gap-4">
-              <LinhaInformacao
-                titulo="Data"
-                valor={formatarData(manutencao.data)}
+          {menuAcoesAberto ? (
+            <>
+              <TouchableOpacity
+                className="absolute inset-0"
+                activeOpacity={1}
+                onPress={() => setMenuAcoesAberto(false)}
               />
-              <LinhaInformacao
-                titulo="Quilometragem"
-                valor={`${manutencao.quilometragem.toLocaleString("pt-BR")} km`}
-              />
-              <LinhaInformacao
-                titulo="Valor"
-                valor={
-                  typeof manutencao.custo === "number"
-                    ? formatarBRL(manutencao.custo)
-                    : "Não informado"
-                }
-              />
-              <LinhaInformacao
-                titulo="Observação"
-                valor={
-                  manutencao.observacao ? manutencao.observacao : "Não informada"
-                }
-              />
-            </View>
-          </View>
 
-          <View className="mt-6 gap-3">
-            <TouchableOpacity
-              className="items-center rounded-2xl bg-cyan-500 px-4 py-3"
-              onPress={irParaEditar}
-              activeOpacity={0.8}
-            >
-              <Text className="text-base font-bold text-slate-950">Editar</Text>
-            </TouchableOpacity>
+              <View className="absolute right-5 top-24 w-56 rounded-2xl border border-slate-800 bg-slate-900 p-2">
+                <TouchableOpacity
+                  className="flex-row items-center rounded-xl px-4 py-3"
+                  onPress={irParaEditar}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="create-outline" size={18} color="#22d3ee" />
+                  <Text className="ml-3 text-base font-medium text-white">
+                    Editar manutenção
+                  </Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-              className="items-center rounded-2xl bg-red-500 px-4 py-3"
-              onPress={confirmarExclusao}
-              activeOpacity={0.8}
-              disabled={excluindo}
-            >
-              <Text className="text-base font-bold text-white">
-                {excluindo ? "Excluindo..." : "Excluir"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
+                <TouchableOpacity
+                  className="mt-1 flex-row items-center rounded-xl px-4 py-3"
+                  onPress={confirmarExclusao}
+                  activeOpacity={0.8}
+                  disabled={excluindo}
+                >
+                  {excluindo ? (
+                    <ActivityIndicator size="small" color="#ef4444" />
+                  ) : (
+                    <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                  )}
+
+                  <Text className="ml-3 text-base font-medium text-red-400">
+                    {excluindo ? "Excluindo..." : "Excluir manutenção"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : null}
+        </View>
       </SafeAreaView>
 
       <AlertaApp
@@ -284,16 +300,6 @@ export default function TelaDetalhesManutencao() {
             void excluir(id);
           }
         }}
-      />
-
-      <AlertaApp
-        visivel={alertaSucessoAberto}
-        titulo="Sucesso"
-        mensagem="Manutenção excluída com sucesso."
-        variante="sucesso"
-        textoConfirmar="Fechar"
-        aoFechar={fecharAlertaSucesso}
-        aoConfirmar={fecharAlertaSucesso}
       />
 
       <AlertaApp

@@ -18,6 +18,11 @@ import {
 import { banco, storage } from "./firebase";
 import { Moto } from "../tipos/moto";
 import { gerarId } from "../utilitarios/gerar-id";
+import {
+  buscarMotoSelecionadaId,
+  limparMotoSelecionadaId,
+} from "./moto-selecionada-firebase";
+import { excluirManutencoesPorMotoId } from "./manutencoes-firebase";
 
 const NOME_COLECAO = "motos";
 
@@ -222,6 +227,14 @@ export async function excluirMoto(id: string): Promise<void> {
 
   if (!motoAtual) {
     return;
+  }
+
+  await excluirManutencoesPorMotoId(id);
+
+  const motoSelecionadaId = await buscarMotoSelecionadaId();
+
+  if (motoSelecionadaId === id) {
+    await limparMotoSelecionadaId();
   }
 
   if (motoAtual.fotoCaminho) {

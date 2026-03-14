@@ -76,9 +76,13 @@ export default function TelaManutencoes() {
     <SafeAreaView className="flex-1 bg-slate-950">
       <ScrollView contentContainerClassName="px-5 pt-14 pb-6">
         <View className="flex-row items-start justify-between">
-          <View className="flex-1 pr-4">
-            <Text className="text-3xl font-bold text-white">Manutenções</Text>
-            <Text className="mt-1 text-base text-slate-300">
+          <View className="h-8 w-8" />
+
+          <View className="flex-1 px-4">
+            <Text className="text-center text-3xl font-bold text-white">
+              Manutenções
+            </Text>
+            <Text className="mt-1 text-center text-base text-slate-300">
               {motoSelecionada
                 ? `${motoSelecionada.marca} ${motoSelecionada.modelo}`
                 : "Nenhuma moto selecionada"}

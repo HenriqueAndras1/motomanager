@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -212,6 +214,7 @@ type ErrosFormulario = {
   data?: string;
   quilometragem?: string;
   itens?: string;
+  geral?: string;
 };
 
 export default function TelaNovaManutencao() {
@@ -230,8 +233,6 @@ export default function TelaNovaManutencao() {
   const [salvando, setSalvando] = useState(false);
   const [erros, setErros] = useState<ErrosFormulario>({});
   const [alertaSemMotoAberto, setAlertaSemMotoAberto] = useState(false);
-  const [alertaSucessoAberto, setAlertaSucessoAberto] = useState(false);
-  const [alertaErroAberto, setAlertaErroAberto] = useState(false);
 
   useEffect(() => {
     let ativo = true;
@@ -311,6 +312,12 @@ export default function TelaNovaManutencao() {
 
       return proximo;
     });
+
+    setErros((estadoAnterior) => ({
+      ...estadoAnterior,
+      itens: undefined,
+      geral: undefined,
+    }));
   }
 
   function toggleSecao(secao: string): void {
@@ -357,6 +364,23 @@ export default function TelaNovaManutencao() {
       novosErros.itens = "Selecione pelo menos um item da manutenção.";
     }
 
+    try {
+      const moto = await obterMotoPorId(motoSelecionadaId);
+
+      if (
+        moto &&
+        typeof moto.quilometragem === "number" &&
+        Number.isFinite(moto.quilometragem) &&
+        Number.isFinite(kmNumero) &&
+        kmNumero < moto.quilometragem
+      ) {
+        novosErros.quilometragem =
+          "A quilometragem da manutenção não pode ser menor que a quilometragem atual da moto.";
+      }
+    } catch {
+      // ignora validação extra se não conseguir buscar a moto
+    }
+
     setErros(novosErros);
 
     if (Object.keys(novosErros).length > 0 || !dataISO) {
@@ -378,277 +402,314 @@ export default function TelaNovaManutencao() {
         observacao: observacao.trim() ? observacao.trim() : undefined,
       });
 
-      setAlertaSucessoAberto(true);
+      router.replace("/(abas)/manutencoes");
     } catch (erro) {
       console.error("Erro ao cadastrar manutenção:", erro);
-      setAlertaErroAberto(true);
+      setErros((estadoAnterior) => ({
+        ...estadoAnterior,
+        geral: "Não foi possível cadastrar a manutenção.",
+      }));
     } finally {
       setSalvando(false);
     }
   }
 
-  function fecharAlertaSucesso(): void {
-    setAlertaSucessoAberto(false);
-    router.replace("/(abas)/manutencoes");
-  }
-
   return (
     <>
       <SafeAreaView className="flex-1 bg-slate-950">
-        <View className="flex-1">
-          <ScrollView
-            contentContainerClassName="px-5 pt-14 pb-6"
-            keyboardShouldPersistTaps="handled"
-          >
-            <View className="mb-6 flex-row items-center justify-between">
-              <TouchableOpacity
-                className="h-10 w-10 items-center justify-center rounded-full bg-slate-900"
-                onPress={voltar}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="arrow-back" size={22} color="#ffffff" />
-              </TouchableOpacity>
+        <KeyboardAvoidingView
+          className="flex-1"
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 24 : 0}
+        >
+          <View className="flex-1">
+            <ScrollView
+              contentContainerClassName="px-5 pt-14 pb-10"
+              keyboardShouldPersistTaps="handled"
+            >
+              <View className="mb-6 flex-row items-center justify-between">
+                <TouchableOpacity
+                  className="h-10 w-10 items-center justify-center rounded-full bg-slate-900"
+                  onPress={voltar}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="arrow-back" size={22} color="#ffffff" />
+                </TouchableOpacity>
 
-              <View className="flex-1 px-4">
-                <Text className="text-center text-3xl font-bold text-white">
-                  Nova manutenção
-                </Text>
-                <Text className="mt-1 text-center text-base text-slate-300">
-                  Registre uma manutenção da moto selecionada.
-                </Text>
+                <View className="flex-1 px-4">
+                  <Text className="text-center text-3xl font-bold text-white">
+                    Nova manutenção
+                  </Text>
+                  <Text className="mt-1 text-center text-base text-slate-300">
+                    Registre uma manutenção da moto selecionada.
+                  </Text>
+                </View>
+
+                <View className="h-10 w-10" />
               </View>
 
-              <View className="h-10 w-10" />
-            </View>
+              <View className="gap-3">
+                <Text className="text-sm font-medium text-slate-200">
+                  Itens da manutenção
+                </Text>
 
-            <View className="gap-3">
-              <Text className="text-sm font-medium text-slate-200">
-                Itens da manutenção
-              </Text>
-
-              <Pressable
-                onPress={() => setModalAberto(true)}
-                className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3"
-              >
-                <View className="flex-row items-center justify-between">
-                  <View className="flex-1 pr-3">
-                    <Text className="text-base font-bold text-white">
-                      {listaSelecionados.length > 0
-                        ? `${listaSelecionados.length} item(ns) selecionado(s)`
-                        : "Selecionar itens"}
-                    </Text>
-                    <Text className="mt-1 text-sm text-slate-400">
-                      Toque para abrir a lista
-                    </Text>
-                  </View>
-
-                  <Text className="text-xl font-bold text-white">›</Text>
-                </View>
-              </Pressable>
-
-              {erros.itens ? (
-                <Text className="text-sm text-red-400">{erros.itens}</Text>
-              ) : null}
-
-              {listaSelecionados.length > 0 ? (
-                <View className="flex-row flex-wrap">
-                  {listaSelecionados.slice(0, 6).map((item) => (
-                    <View
-                      key={item}
-                      className="mb-2 mr-2 rounded-full border border-slate-700 bg-slate-900 px-3 py-2"
-                    >
-                      <Text className="font-semibold text-white">{item}</Text>
-                    </View>
-                  ))}
-
-                  {listaSelecionados.length > 6 ? (
-                    <View className="mb-2 mr-2 rounded-full border border-slate-700 bg-slate-900 px-3 py-2">
-                      <Text className="font-bold text-white">
-                        +{listaSelecionados.length - 6} mais
+                <Pressable
+                  onPress={() => setModalAberto(true)}
+                  className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3"
+                >
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-1 pr-3">
+                      <Text className="text-base font-bold text-white">
+                        {listaSelecionados.length > 0
+                          ? `${listaSelecionados.length} item(ns) selecionado(s)`
+                          : "Selecionar itens"}
+                      </Text>
+                      <Text className="mt-1 text-sm text-slate-400">
+                        Toque para abrir a lista
                       </Text>
                     </View>
-                  ) : null}
-                </View>
-              ) : null}
 
-              <CampoTexto
-                titulo="Quilometragem"
-                valor={km}
-                aoAlterarTexto={(texto) => setKm(mascaraKm(texto))}
-                placeholder="10.000"
-                teclado="numeric"
-                erro={erros.quilometragem}
-              />
+                    <Text className="text-xl font-bold text-white">›</Text>
+                  </View>
+                </Pressable>
 
-              <CampoTexto
-                titulo="Data (DD/MM/AAAA)"
-                valor={dataBR}
-                aoAlterarTexto={(texto) => setDataBR(mascaraDataBR(texto))}
-                placeholder="25/02/2026"
-                teclado="numeric"
-                erro={erros.data}
-              />
+                {erros.itens ? (
+                  <Text className="text-sm text-red-400">{erros.itens}</Text>
+                ) : null}
 
-              <CampoTexto
-                titulo="Valor"
-                valor={mascaraValor(valorCentavosDigits)}
-                aoAlterarTexto={(texto) =>
-                  setValorCentavosDigits(texto.replace(/\D/g, "").slice(0, 10))
-                }
-                placeholder="R$ 0,00"
-                teclado="numeric"
-              />
+                {listaSelecionados.length > 0 ? (
+                  <View className="flex-row flex-wrap">
+                    {listaSelecionados.slice(0, 6).map((item) => (
+                      <View
+                        key={item}
+                        className="mb-2 mr-2 rounded-full border border-slate-700 bg-slate-900 px-3 py-2"
+                      >
+                        <Text className="font-semibold text-white">{item}</Text>
+                      </View>
+                    ))}
 
-              <CampoTexto
-                titulo="Observação (opcional)"
-                valor={observacao}
-                aoAlterarTexto={setObservacao}
-                placeholder="Ex: óleo e filtro trocados"
-                multiline
-              />
+                    {listaSelecionados.length > 6 ? (
+                      <View className="mb-2 mr-2 rounded-full border border-slate-700 bg-slate-900 px-3 py-2">
+                        <Text className="font-bold text-white">
+                          +{listaSelecionados.length - 6} mais
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+                ) : null}
 
-              <TouchableOpacity
-                className="mt-2 items-center rounded-2xl bg-cyan-500 px-4 py-3"
-                onPress={salvar}
-                activeOpacity={0.8}
-                disabled={salvando}
-              >
-                <Text className="text-base font-bold text-slate-950">
-                  {salvando ? "Salvando..." : "Salvar manutenção"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-
-          <Modal
-            visible={modalAberto}
-            animationType="slide"
-            onRequestClose={() => setModalAberto(false)}
-          >
-            <SafeAreaView className="flex-1 bg-slate-950">
-              <View className="border-b border-slate-800 px-5 py-4">
-                <View className="flex-row items-center justify-between">
-                  <TouchableOpacity
-                    onPress={() => setModalAberto(false)}
-                    activeOpacity={0.8}
-                  >
-                    <Text className="font-bold text-white">Voltar</Text>
-                  </TouchableOpacity>
-
-                  <Text className="text-lg font-bold text-white">
-                    Selecionar itens
-                  </Text>
-
-                  <TouchableOpacity
-                    onPress={() => {
-                      setBusca("");
-                      setSelecionados(new Set());
-                    }}
-                    activeOpacity={0.8}
-                  >
-                    <Text className="font-bold text-white">Limpar</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              <View className="px-5 py-4">
-                <TextInput
-                  value={busca}
-                  onChangeText={setBusca}
-                  placeholder="Pesquisar (óleo, filtro, pastilha...)"
-                  placeholderTextColor="#94a3b8"
-                  className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-base text-white"
+                <CampoTexto
+                  titulo="Quilometragem"
+                  valor={km}
+                  aoAlterarTexto={(texto) => {
+                    setKm(mascaraKm(texto));
+                    setErros((estadoAnterior) => ({
+                      ...estadoAnterior,
+                      quilometragem: undefined,
+                      geral: undefined,
+                    }));
+                  }}
+                  placeholder="10.000"
+                  teclado="numeric"
+                  erro={erros.quilometragem}
                 />
 
-                <Text className="mt-3 text-sm text-slate-400">
-                  Marcados: {selecionados.size}
-                </Text>
-              </View>
+                <CampoTexto
+                  titulo="Data (DD/MM/AAAA)"
+                  valor={dataBR}
+                  aoAlterarTexto={(texto) => {
+                    setDataBR(mascaraDataBR(texto));
+                    setErros((estadoAnterior) => ({
+                      ...estadoAnterior,
+                      data: undefined,
+                      geral: undefined,
+                    }));
+                  }}
+                  placeholder="25/02/2026"
+                  teclado="numeric"
+                  erro={erros.data}
+                />
 
-              <ScrollView contentContainerClassName="px-5 pb-28">
-                {secoesFiltradas.map((secao) => {
-                  const aberta = secoesAbertas.has(secao.secao);
+                <CampoTexto
+                  titulo="Valor"
+                  valor={mascaraValor(valorCentavosDigits)}
+                  aoAlterarTexto={(texto) => {
+                    setValorCentavosDigits(
+                      texto.replace(/\D/g, "").slice(0, 10),
+                    );
+                    setErros((estadoAnterior) => ({
+                      ...estadoAnterior,
+                      geral: undefined,
+                    }));
+                  }}
+                  placeholder="R$ 0,00"
+                  teclado="numeric"
+                />
 
-                  return (
-                    <View key={secao.secao} className="mb-3">
-                      <TouchableOpacity
-                        onPress={() => toggleSecao(secao.secao)}
-                        activeOpacity={0.8}
-                        className={`flex-row items-center justify-between rounded-2xl border-2 px-4 py-3 ${
-                          aberta
-                            ? "border-cyan-500 bg-slate-950"
-                            : "border-slate-700 bg-slate-900"
-                        }`}
-                      >
-                        <Text className="flex-1 font-bold text-white">
-                          {secao.secao}
-                        </Text>
+                <CampoTexto
+                  titulo="Observação (opcional)"
+                  valor={observacao}
+                  aoAlterarTexto={(texto) => {
+                    setObservacao(texto);
+                    setErros((estadoAnterior) => ({
+                      ...estadoAnterior,
+                      geral: undefined,
+                    }));
+                  }}
+                  placeholder="Ex: óleo e filtro trocados"
+                  multiline
+                />
 
-                        <View className="ml-3 flex-row items-center">
-                          <View className="mr-3 rounded-full border border-slate-700 bg-slate-900 px-3 py-1">
-                            <Text className="font-bold text-white">
-                              {
-                                secao.itens.filter((item) => selecionados.has(item))
-                                  .length
-                              }
-                            </Text>
-                          </View>
+                {erros.geral ? (
+                  <Text className="text-sm text-red-400">{erros.geral}</Text>
+                ) : null}
 
-                          <Text
-                            className={`text-lg font-bold ${
-                              aberta ? "text-cyan-400" : "text-white"
-                            }`}
-                          >
-                            {aberta ? "▾" : "▸"}
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-
-                      {aberta ? (
-                        <View className="mt-2 overflow-hidden rounded-2xl border border-slate-700">
-                          {secao.itens.map((item, indice) => {
-                            const marcado = selecionados.has(item);
-
-                            return (
-                              <TouchableOpacity
-                                key={item}
-                                onPress={() => toggleItem(item)}
-                                activeOpacity={0.8}
-                                className={`flex-row items-center justify-between px-4 py-3 ${
-                                  marcado ? "bg-cyan-500" : "bg-slate-900"
-                                } ${indice > 0 ? "border-t border-slate-700" : ""}`}
-                              >
-                                <Text className="flex-1 font-semibold text-white">
-                                  {item}
-                                </Text>
-
-                                <Text className="ml-3 font-bold text-white">
-                                  {marcado ? "✓" : ""}
-                                </Text>
-                              </TouchableOpacity>
-                            );
-                          })}
-                        </View>
-                      ) : null}
-                    </View>
-                  );
-                })}
-              </ScrollView>
-
-              <View className="absolute bottom-0 left-0 right-0 border-t border-slate-800 bg-slate-950 px-5 py-4">
                 <TouchableOpacity
-                  onPress={() => setModalAberto(false)}
+                  className="mt-2 items-center rounded-2xl bg-cyan-500 px-4 py-3"
+                  onPress={salvar}
                   activeOpacity={0.8}
-                  className="items-center rounded-2xl bg-cyan-500 px-4 py-3"
+                  disabled={salvando}
                 >
                   <Text className="text-base font-bold text-slate-950">
-                    Concluir ({selecionados.size})
+                    {salvando ? "Salvando..." : "Salvar manutenção"}
                   </Text>
                 </TouchableOpacity>
               </View>
-            </SafeAreaView>
-          </Modal>
-        </View>
+            </ScrollView>
+
+            <Modal
+              visible={modalAberto}
+              animationType="slide"
+              onRequestClose={() => setModalAberto(false)}
+            >
+              <SafeAreaView className="flex-1 bg-slate-950">
+                <View className="border-b border-slate-800 px-5 py-4">
+                  <View className="flex-row items-center justify-between">
+                    <TouchableOpacity
+                      onPress={() => setModalAberto(false)}
+                      activeOpacity={0.8}
+                    >
+                      <Text className="font-bold text-white">Voltar</Text>
+                    </TouchableOpacity>
+
+                    <Text className="text-lg font-bold text-white">
+                      Selecionar itens
+                    </Text>
+
+                    <TouchableOpacity
+                      onPress={() => {
+                        setBusca("");
+                        setSelecionados(new Set());
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <Text className="font-bold text-white">Limpar</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View className="px-5 py-4">
+                  <TextInput
+                    value={busca}
+                    onChangeText={setBusca}
+                    placeholder="Pesquisar (óleo, filtro, pastilha...)"
+                    placeholderTextColor="#94a3b8"
+                    className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-base text-white"
+                  />
+
+                  <Text className="mt-3 text-sm text-slate-400">
+                    Marcados: {selecionados.size}
+                  </Text>
+                </View>
+
+                <ScrollView contentContainerClassName="px-5 pb-28">
+                  {secoesFiltradas.map((secao) => {
+                    const aberta = secoesAbertas.has(secao.secao);
+
+                    return (
+                      <View key={secao.secao} className="mb-3">
+                        <TouchableOpacity
+                          onPress={() => toggleSecao(secao.secao)}
+                          activeOpacity={0.8}
+                          className={`flex-row items-center justify-between rounded-2xl border-2 px-4 py-3 ${
+                            aberta
+                              ? "border-cyan-500 bg-slate-950"
+                              : "border-slate-700 bg-slate-900"
+                          }`}
+                        >
+                          <Text className="flex-1 font-bold text-white">
+                            {secao.secao}
+                          </Text>
+
+                          <View className="ml-3 flex-row items-center">
+                            <View className="mr-3 rounded-full border border-slate-700 bg-slate-900 px-3 py-1">
+                              <Text className="font-bold text-white">
+                                {
+                                  secao.itens.filter((item) =>
+                                    selecionados.has(item),
+                                  ).length
+                                }
+                              </Text>
+                            </View>
+
+                            <Text
+                              className={`text-lg font-bold ${
+                                aberta ? "text-cyan-400" : "text-white"
+                              }`}
+                            >
+                              {aberta ? "▾" : "▸"}
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+
+                        {aberta ? (
+                          <View className="mt-2 overflow-hidden rounded-2xl border border-slate-700">
+                            {secao.itens.map((item, indice) => {
+                              const marcado = selecionados.has(item);
+
+                              return (
+                                <TouchableOpacity
+                                  key={item}
+                                  onPress={() => toggleItem(item)}
+                                  activeOpacity={0.8}
+                                  className={`flex-row items-center justify-between px-4 py-3 ${
+                                    marcado ? "bg-cyan-500" : "bg-slate-900"
+                                  } ${
+                                    indice > 0 ? "border-t border-slate-700" : ""
+                                  }`}
+                                >
+                                  <Text className="flex-1 font-semibold text-white">
+                                    {item}
+                                  </Text>
+
+                                  <Text className="ml-3 font-bold text-white">
+                                    {marcado ? "✓" : ""}
+                                  </Text>
+                                </TouchableOpacity>
+                              );
+                            })}
+                          </View>
+                        ) : null}
+                      </View>
+                    );
+                  })}
+                </ScrollView>
+
+                <View className="absolute bottom-0 left-0 right-0 border-t border-slate-800 bg-slate-950 px-5 py-4">
+                  <TouchableOpacity
+                    onPress={() => setModalAberto(false)}
+                    activeOpacity={0.8}
+                    className="items-center rounded-2xl bg-cyan-500 px-4 py-3"
+                  >
+                    <Text className="text-base font-bold text-slate-950">
+                      Concluir ({selecionados.size})
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </SafeAreaView>
+            </Modal>
+          </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
 
       <AlertaApp
@@ -659,26 +720,6 @@ export default function TelaNovaManutencao() {
         textoConfirmar="Fechar"
         aoFechar={() => setAlertaSemMotoAberto(false)}
         aoConfirmar={() => setAlertaSemMotoAberto(false)}
-      />
-
-      <AlertaApp
-        visivel={alertaSucessoAberto}
-        titulo="Sucesso"
-        mensagem="Manutenção cadastrada com sucesso."
-        variante="sucesso"
-        textoConfirmar="Fechar"
-        aoFechar={fecharAlertaSucesso}
-        aoConfirmar={fecharAlertaSucesso}
-      />
-
-      <AlertaApp
-        visivel={alertaErroAberto}
-        titulo="Erro"
-        mensagem="Não foi possível cadastrar a manutenção."
-        variante="erro"
-        textoConfirmar="Fechar"
-        aoFechar={() => setAlertaErroAberto(false)}
-        aoConfirmar={() => setAlertaErroAberto(false)}
       />
     </>
   );

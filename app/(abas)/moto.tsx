@@ -33,8 +33,11 @@ export default function TelaMoto() {
   const [alertaSucessoAberto, setAlertaSucessoAberto] = useState(false);
   const [alertaErroAberto, setAlertaErroAberto] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
+  const [alturaTela, setAlturaTela] = useState(0);
+  const [alturaConteudo, setAlturaConteudo] = useState(0);
 
   const temMaisDeUmaMoto = useMemo(() => motos.length > 1, [motos.length]);
+  const devePermitirScroll = alturaConteudo > alturaTela;
 
   useFocusEffect(
     useCallback(() => {
@@ -267,10 +270,21 @@ export default function TelaMoto() {
   return (
     <>
       <SafeAreaView className="flex-1 bg-slate-950">
-        <View className="flex-1">
+        <View
+          className="flex-1"
+          onLayout={(evento) => {
+            setAlturaTela(evento.nativeEvent.layout.height);
+          }}
+        >
           <ScrollView
             contentContainerClassName="px-5 pt-14 pb-6"
+            contentContainerStyle={{ flexGrow: 1 }}
             keyboardShouldPersistTaps="handled"
+            scrollEnabled={devePermitirScroll}
+            showsVerticalScrollIndicator={devePermitirScroll}
+            onContentSizeChange={(_, altura) => {
+              setAlturaConteudo(altura);
+            }}
           >
             <View className="relative">
               <View className="flex-row items-start justify-between">
@@ -359,7 +373,7 @@ export default function TelaMoto() {
                 Resumo da moto
               </Text>
 
-              <View className="mt-4 flex-row gap-3">
+              <View className="mt-5 flex-row gap-6">
                 <CardInformacao
                   titulo="Ano"
                   valor={String(motoSelecionada.ano)}
@@ -367,7 +381,7 @@ export default function TelaMoto() {
                 <CardInformacao titulo="Cor" valor={motoSelecionada.cor} />
               </View>
 
-              <View className="mt-3 flex-row gap-3">
+              <View className="mt-5 flex-row gap-6">
                 <CardInformacao
                   titulo="KM atual"
                   valor={`${motoSelecionada.quilometragem.toLocaleString("pt-BR")} km`}
@@ -394,17 +408,17 @@ export default function TelaMoto() {
                     {ultimaManutencao.tipo}
                   </Text>
 
-                  <Text className="mt-2 text-sm text-slate-400">
+                  <Text className="mt-3 text-sm text-slate-400">
                     Data: {formatarData(ultimaManutencao.data)}
                   </Text>
 
-                  <Text className="mt-1 text-sm text-slate-400">
+                  <Text className="mt-2 text-sm text-slate-400">
                     Quilometragem:{" "}
                     {ultimaManutencao.quilometragem.toLocaleString("pt-BR")} km
                   </Text>
 
                   {typeof ultimaManutencao.custo === "number" ? (
-                    <Text className="mt-1 text-sm text-slate-400">
+                    <Text className="mt-2 text-sm text-slate-400">
                       Valor: {formatarBRL(ultimaManutencao.custo)}
                     </Text>
                   ) : null}
@@ -416,7 +430,7 @@ export default function TelaMoto() {
                   ) : null}
                 </View>
               ) : (
-                <Text className="mt-3 text-base text-slate-300">
+                <Text className="mt-4 text-base text-slate-300">
                   Nenhuma manutenção registrada até o momento.
                 </Text>
               )}
@@ -525,7 +539,7 @@ type CardInformacaoProps = {
 
 function CardInformacao({ titulo, valor }: CardInformacaoProps) {
   return (
-    <View className="flex-1 rounded-2xl bg-slate-800 px-4 py-4">
+    <View className="flex-1">
       <Text className="text-sm font-medium text-slate-400">{titulo}</Text>
       <Text className="mt-2 text-base font-semibold text-white">{valor}</Text>
     </View>

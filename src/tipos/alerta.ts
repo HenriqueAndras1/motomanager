@@ -1,0 +1,21 @@
+export type TipoAlerta = "manutencao_km" | "data";
+export type PeriodoUso = "dia" | "semana" | "mes";
+export type Alerta = {
+  id: string;
+  motoId: string;
+  titulo: string;
+  observacao?: string;
+  tipo: TipoAlerta;
+  ativo: boolean;
+  concluido: boolean;
+  criadoEm: string;
+  atualizadoEm: string;
+  concluidoEm?: string;
+  quilometragemAtual?: number;
+  quilometragemObjetivo?: number;
+  usoMedioValor?: number;
+  usoMedioPeriodo?: PeriodoUso;
+  quilometragemFaltante?: number;
+  dataPrevista?: string;
+  dataAlvo?: string;
+};

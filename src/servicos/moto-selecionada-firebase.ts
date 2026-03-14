@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { deleteField, doc, getDoc, setDoc } from "firebase/firestore";
 import { banco } from "./firebase";
 
 const NOME_COLECAO = "configuracoes";
@@ -34,6 +34,18 @@ export async function salvarMotoSelecionadaId(
     referenciaDocumento,
     {
       motoSelecionadaId,
+    },
+    { merge: true },
+  );
+}
+
+export async function limparMotoSelecionadaId(): Promise<void> {
+  const referenciaDocumento = doc(banco, NOME_COLECAO, ID_DOCUMENTO);
+
+  await setDoc(
+    referenciaDocumento,
+    {
+      motoSelecionadaId: deleteField(),
     },
     { merge: true },
   );

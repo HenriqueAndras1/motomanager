@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   SafeAreaView,
   ScrollView,
   Text,
@@ -14,7 +16,7 @@ import {
   atualizarManutencao,
   obterManutencaoPorId,
 } from "../../src/servicos/manutencoes-firebase";
-import AlertaApp from "../../src/componentes/AlertaApp";
+import { obterMotoPorId } from "../../src/servicos/motos-firebase";
 
 const ITENS_MANUTENCAO: { secao: string; itens: string[] }[] = [
   {
@@ -208,6 +210,7 @@ type ErrosFormulario = {
   data?: string;
   quilometragem?: string;
   itens?: string;
+  geral?: string;
 };
 
 export default function TelaEditarManutencao() {
@@ -217,6 +220,7 @@ export default function TelaEditarManutencao() {
   const [quilometragem, setQuilometragem] = useState("");
   const [valorCentavosDigits, setValorCentavosDigits] = useState("");
   const [observacao, setObservacao] = useState("");
+  const [motoId, setMotoId] = useState("");
 
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
   const [modalAberto, setModalAberto] = useState(false);
@@ -228,8 +232,6 @@ export default function TelaEditarManutencao() {
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [erros, setErros] = useState<ErrosFormulario>({});
-  const [alertaSucessoAberto, setAlertaSucessoAberto] = useState(false);
-  const [alertaErroAberto, setAlertaErroAberto] = useState(false);
 
   useEffect(() => {
     async function carregar(): Promise<void> {
@@ -253,6 +255,7 @@ export default function TelaEditarManutencao() {
         setSelecionados(new Set(itensSeparados));
         setDataBR(isoParaBR(manutencao.data));
         setQuilometragem(manutencao.quilometragem.toLocaleString("pt-BR"));
+        setMotoId(manutencao.motoId);
 
         if (typeof manutencao.custo === "number") {
           setValorCentavosDigits(String(Math.round(manutencao.custo * 100)));
@@ -307,6 +310,12 @@ export default function TelaEditarManutencao() {
 
       return proximo;
     });
+
+    setErros((estadoAnterior) => ({
+      ...estadoAnterior,
+      itens: undefined,
+      geral: undefined,
+    }));
   }
 
   function toggleSecao(secao: string): void {
@@ -346,6 +355,24 @@ export default function TelaEditarManutencao() {
       novosErros.itens = "Selecione pelo menos um item da manutenção.";
     }
 
+    if (motoId && Number.isFinite(kmNumero)) {
+      try {
+        const moto = await obterMotoPorId(motoId);
+
+        if (
+          moto &&
+          typeof moto.quilometragem === "number" &&
+          Number.isFinite(moto.quilometragem) &&
+          kmNumero < moto.quilometragem
+        ) {
+          novosErros.quilometragem =
+            "A quilometragem da manutenção não pode ser menor que a quilometragem atual da moto.";
+        }
+      } catch {
+        // ignora validação extra
+      }
+    }
+
     setErros(novosErros);
 
     if (Object.keys(novosErros).length > 0 || !id || !dataISO) {
@@ -366,58 +393,38 @@ export default function TelaEditarManutencao() {
         observacao: observacao.trim() ? observacao.trim() : undefined,
       });
 
-      setAlertaSucessoAberto(true);
+      router.replace("/(abas)/manutencoes");
     } catch (erro) {
       console.error("Erro ao atualizar manutenção:", erro);
-      setAlertaErroAberto(true);
+      setErros((estadoAnterior) => ({
+        ...estadoAnterior,
+        geral: "Não foi possível atualizar a manutenção.",
+      }));
     } finally {
       setSalvando(false);
     }
   }
 
-  function fecharAlertaSucesso(): void {
-    setAlertaSucessoAberto(false);
-    router.replace("/(abas)/manutencoes");
-  }
-
   if (carregando) {
     return (
-      <>
-        <SafeAreaView className="flex-1 items-center justify-center bg-slate-950">
-          <Text className="text-base text-slate-300">
-            Carregando manutenção...
-          </Text>
-        </SafeAreaView>
-
-        <AlertaApp
-          visivel={alertaSucessoAberto}
-          titulo="Sucesso"
-          mensagem="Manutenção atualizada com sucesso."
-          variante="sucesso"
-          textoConfirmar="Fechar"
-          aoFechar={fecharAlertaSucesso}
-          aoConfirmar={fecharAlertaSucesso}
-        />
-
-        <AlertaApp
-          visivel={alertaErroAberto}
-          titulo="Erro"
-          mensagem="Não foi possível atualizar a manutenção."
-          variante="erro"
-          textoConfirmar="Fechar"
-          aoFechar={() => setAlertaErroAberto(false)}
-          aoConfirmar={() => setAlertaErroAberto(false)}
-        />
-      </>
+      <SafeAreaView className="flex-1 items-center justify-center bg-slate-950">
+        <Text className="text-base text-slate-300">
+          Carregando manutenção...
+        </Text>
+      </SafeAreaView>
     );
   }
 
   return (
-    <>
-      <SafeAreaView className="flex-1 bg-slate-950">
+    <SafeAreaView className="flex-1 bg-slate-950">
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 24 : 0}
+      >
         <View className="flex-1">
           <ScrollView
-            contentContainerClassName="px-5 pt-14 pb-6"
+            contentContainerClassName="px-5 pt-14 pb-10"
             keyboardShouldPersistTaps="handled"
           >
             <View className="mb-6 flex-row items-center justify-between">
@@ -495,7 +502,14 @@ export default function TelaEditarManutencao() {
               <CampoTexto
                 titulo="Quilometragem"
                 valor={quilometragem}
-                aoAlterarTexto={(texto) => setQuilometragem(mascaraKm(texto))}
+                aoAlterarTexto={(texto) => {
+                  setQuilometragem(mascaraKm(texto));
+                  setErros((estadoAnterior) => ({
+                    ...estadoAnterior,
+                    quilometragem: undefined,
+                    geral: undefined,
+                  }));
+                }}
                 placeholder="10.000"
                 teclado="numeric"
                 erro={erros.quilometragem}
@@ -504,7 +518,14 @@ export default function TelaEditarManutencao() {
               <CampoTexto
                 titulo="Data (DD/MM/AAAA)"
                 valor={dataBR}
-                aoAlterarTexto={(texto) => setDataBR(mascaraDataBR(texto))}
+                aoAlterarTexto={(texto) => {
+                  setDataBR(mascaraDataBR(texto));
+                  setErros((estadoAnterior) => ({
+                    ...estadoAnterior,
+                    data: undefined,
+                    geral: undefined,
+                  }));
+                }}
                 placeholder="25/02/2026"
                 teclado="numeric"
                 erro={erros.data}
@@ -513,9 +534,13 @@ export default function TelaEditarManutencao() {
               <CampoTexto
                 titulo="Valor"
                 valor={mascaraValor(valorCentavosDigits)}
-                aoAlterarTexto={(texto) =>
-                  setValorCentavosDigits(texto.replace(/\D/g, "").slice(0, 10))
-                }
+                aoAlterarTexto={(texto) => {
+                  setValorCentavosDigits(texto.replace(/\D/g, "").slice(0, 10));
+                  setErros((estadoAnterior) => ({
+                    ...estadoAnterior,
+                    geral: undefined,
+                  }));
+                }}
                 placeholder="R$ 0,00"
                 teclado="numeric"
               />
@@ -523,10 +548,20 @@ export default function TelaEditarManutencao() {
               <CampoTexto
                 titulo="Observação (opcional)"
                 valor={observacao}
-                aoAlterarTexto={setObservacao}
+                aoAlterarTexto={(texto) => {
+                  setObservacao(texto);
+                  setErros((estadoAnterior) => ({
+                    ...estadoAnterior,
+                    geral: undefined,
+                  }));
+                }}
                 placeholder="Ex: óleo e filtro trocados"
                 multiline
               />
+
+              {erros.geral ? (
+                <Text className="text-sm text-red-400">{erros.geral}</Text>
+              ) : null}
 
               <TouchableOpacity
                 className="mt-2 items-center rounded-2xl bg-cyan-500 px-4 py-3"
@@ -670,28 +705,8 @@ export default function TelaEditarManutencao() {
             </SafeAreaView>
           </Modal>
         </View>
-      </SafeAreaView>
-
-      <AlertaApp
-        visivel={alertaSucessoAberto}
-        titulo="Sucesso"
-        mensagem="Manutenção atualizada com sucesso."
-        variante="sucesso"
-        textoConfirmar="Fechar"
-        aoFechar={fecharAlertaSucesso}
-        aoConfirmar={fecharAlertaSucesso}
-      />
-
-      <AlertaApp
-        visivel={alertaErroAberto}
-        titulo="Erro"
-        mensagem="Não foi possível atualizar a manutenção."
-        variante="erro"
-        textoConfirmar="Fechar"
-        aoFechar={() => setAlertaErroAberto(false)}
-        aoConfirmar={() => setAlertaErroAberto(false)}
-      />
-    </>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

@@ -163,3 +163,16 @@ export async function excluirManutencao(id: string): Promise<void> {
   const referenciaDocumento = doc(banco, NOME_COLECAO, id);
   await deleteDoc(referenciaDocumento);
 }
+
+export async function excluirManutencoesPorMotoId(
+  motoId: string,
+): Promise<void> {
+  const manutencoes = await buscarManutencoesPorMotoId(motoId);
+
+  await Promise.all(
+    manutencoes.map((manutencao) => {
+      const referenciaDocumento = doc(banco, NOME_COLECAO, manutencao.id);
+      return deleteDoc(referenciaDocumento);
+    }),
+  );
+}
