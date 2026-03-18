@@ -1,4 +1,4 @@
-import { Tabs } from "expo-router";
+import { Tabs, router } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTema } from "../../src/contextos/tema-contexto";
@@ -31,11 +31,7 @@ export default function LayoutAbas() {
         options={{
           title: "Moto",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="motorbike"
-              size={size}
-              color={color}
-            />
+            <MaterialCommunityIcons name="motorbike" size={size} color={color} />
           ),
         }}
       />
@@ -45,11 +41,7 @@ export default function LayoutAbas() {
         options={{
           title: "Manutenções",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="wrench"
-              size={size}
-              color={color}
-            />
+            <MaterialCommunityIcons name="wrench" size={size} color={color} />
           ),
         }}
       />
@@ -64,6 +56,7 @@ export default function LayoutAbas() {
         }}
       />
 
+      {/* 🔥 CORREÇÃO AQUI */}
       <Tabs.Screen
         name="configuracoes"
         options={{
@@ -71,6 +64,11 @@ export default function LayoutAbas() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="settings" size={size} color={color} />
           ),
+        }}
+        listeners={{
+          tabPress: () => {
+            router.replace("/configuracoes"); // 🔥 sempre volta pro index
+          },
         }}
       />
     </Tabs>

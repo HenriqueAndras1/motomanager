@@ -15,6 +15,7 @@ import {
   obterAlertaPorId,
 } from "../../src/servicos/alertas-firebase";
 import { obterMotoPorId } from "../../src/servicos/motos-firebase";
+import { useTema } from "../../src/contextos/tema-contexto";
 import { Alerta, PeriodoUso, TipoAlerta } from "../../src/tipos/alerta";
 import { Moto } from "../../src/tipos/moto";
 
@@ -125,6 +126,7 @@ function calcularDataPrevistaTexto(
 }
 
 export default function TelaEditarAlerta() {
+  const { cores } = useTema();
   const { id } = useLocalSearchParams<ParametrosRota>();
 
   const [tipo, setTipo] = useState<TipoAlerta>("manutencao_km");
@@ -217,7 +219,7 @@ export default function TelaEditarAlerta() {
       }
     }
 
-    carregar();
+    void carregar();
 
     return () => {
       ativoTela = false;
@@ -296,7 +298,12 @@ export default function TelaEditarAlerta() {
 
     setErros(novosErros);
 
-    if (Object.keys(novosErros).length > 0 || !id || !motoSelecionada || !alertaAtual) {
+    if (
+      Object.keys(novosErros).length > 0 ||
+      !id ||
+      !motoSelecionada ||
+      !alertaAtual
+    ) {
       return;
     }
 
@@ -338,32 +345,44 @@ export default function TelaEditarAlerta() {
 
   if (carregando) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-slate-950">
-        <Text className="text-base text-slate-300">Carregando alerta...</Text>
+      <SafeAreaView
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: cores.fundo }}
+      >
+        <Text className="text-base" style={{ color: cores.textoSecundario }}>
+          Carregando alerta...
+        </Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-950">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: cores.fundo }}>
       <ScrollView
         contentContainerClassName="px-5 pt-14 pb-6"
         keyboardShouldPersistTaps="handled"
       >
         <View className="mb-6 flex-row items-center justify-between">
           <TouchableOpacity
-            className="h-10 w-10 items-center justify-center rounded-full bg-slate-900"
+            className="h-10 w-10 items-center justify-center rounded-full"
+            style={{ backgroundColor: cores.fundoCard }}
             onPress={voltar}
             activeOpacity={0.8}
           >
-            <Ionicons name="arrow-back" size={22} color="#ffffff" />
+            <Ionicons name="arrow-back" size={22} color={cores.texto} />
           </TouchableOpacity>
 
           <View className="flex-1 px-4">
-            <Text className="text-center text-3xl font-bold text-white">
+            <Text
+              className="text-center text-3xl font-bold"
+              style={{ color: cores.texto }}
+            >
               Editar alerta
             </Text>
-            <Text className="mt-1 text-center text-base text-slate-300">
+            <Text
+              className="mt-1 text-center text-base"
+              style={{ color: cores.textoSecundario }}
+            >
               Atualize os dados do alerta
             </Text>
           </View>
@@ -385,10 +404,14 @@ export default function TelaEditarAlerta() {
             }}
             placeholder="Ex: Troca de óleo"
             erro={erros.titulo}
+            cores={cores}
           />
 
           <View>
-            <Text className="mb-2 text-sm font-medium text-slate-200">
+            <Text
+              className="mb-2 text-sm font-medium"
+              style={{ color: cores.textoSecundario }}
+            >
               Tipo do alerta
             </Text>
 
@@ -397,28 +420,46 @@ export default function TelaEditarAlerta() {
                 titulo="Manutenção por KM"
                 selecionado={tipo === "manutencao_km"}
                 onPress={() => setTipo("manutencao_km")}
+                cores={cores}
               />
               <BotaoTipo
                 titulo="Por data"
                 selecionado={tipo === "data"}
                 onPress={() => setTipo("data")}
+                cores={cores}
               />
             </View>
           </View>
 
           {tipo === "manutencao_km" ? (
             <>
-              <View className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-4">
-                <Text className="text-sm font-medium text-slate-400">
+              <View
+                className="rounded-2xl px-4 py-4"
+                style={{
+                  borderWidth: 1,
+                  borderColor: cores.borda,
+                  backgroundColor: cores.fundoCard,
+                }}
+              >
+                <Text
+                  className="text-sm font-medium"
+                  style={{ color: cores.textoSuave }}
+                >
                   Quilometragem atual da moto
                 </Text>
-                <Text className="mt-1 text-base font-bold text-white">
+                <Text
+                  className="mt-1 text-base font-bold"
+                  style={{ color: cores.texto }}
+                >
                   {motoSelecionada
                     ? `${motoSelecionada.quilometragem.toLocaleString("pt-BR")} km`
                     : "Carregando..."}
                 </Text>
 
-                <Text className="mt-3 text-sm font-medium text-slate-400">
+                <Text
+                  className="mt-3 text-sm font-medium"
+                  style={{ color: cores.textoSuave }}
+                >
                   A meta precisa ser maior que a quilometragem atual.
                 </Text>
               </View>
@@ -437,33 +478,53 @@ export default function TelaEditarAlerta() {
                 placeholder="Ex: 18000"
                 teclado="numeric"
                 erro={erros.quilometragemObjetivo}
+                cores={cores}
               />
 
               {motoSelecionada && quilometragemObjetivo ? (
-                <View className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-4">
-                  <Text className="text-sm font-medium text-slate-400">
+                <View
+                  className="rounded-2xl px-4 py-4"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: cores.borda,
+                    backgroundColor: cores.fundoCard,
+                  }}
+                >
+                  <Text
+                    className="text-sm font-medium"
+                    style={{ color: cores.textoSuave }}
+                  >
                     Comparativo
                   </Text>
-                  <Text className="mt-1 text-base text-white">
+                  <Text className="mt-1 text-base" style={{ color: cores.texto }}>
                     Atual: {motoSelecionada.quilometragem.toLocaleString("pt-BR")} km
                   </Text>
-                  <Text className="mt-1 text-base text-white">
+                  <Text className="mt-1 text-base" style={{ color: cores.texto }}>
                     Alvo: {Number(quilometragemObjetivo).toLocaleString("pt-BR")} km
                   </Text>
                 </View>
               ) : null}
 
               <View>
-                <Text className="mb-2 text-sm font-medium text-slate-200">
+                <Text
+                  className="mb-2 text-sm font-medium"
+                  style={{ color: cores.textoSecundario }}
+                >
                   Uso médio
                 </Text>
 
                 <View className="flex-row gap-3">
                   <View className="flex-1">
                     <TextInput
-                      className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-base text-white"
+                      className="rounded-2xl px-4 py-3 text-base"
+                      style={{
+                        borderWidth: 1,
+                        borderColor: cores.borda,
+                        backgroundColor: cores.fundoCard,
+                        color: cores.texto,
+                      }}
                       placeholder="Ex: 100"
-                      placeholderTextColor="#94a3b8"
+                      placeholderTextColor={cores.textoSuave}
                       value={usoMedioValor}
                       onChangeText={(texto) => {
                         setUsoMedioValor(mascaraNumero(texto));
@@ -481,23 +542,34 @@ export default function TelaEditarAlerta() {
                     <SeletorPeriodo
                       valor={usoMedioPeriodo}
                       aoSelecionar={setUsoMedioPeriodo}
+                      cores={cores}
                     />
                   </View>
                 </View>
 
                 {erros.usoMedioValor ? (
-                  <Text className="mt-2 text-sm text-red-400">
+                  <Text className="mt-2 text-sm" style={{ color: cores.perigo }}>
                     {erros.usoMedioValor}
                   </Text>
                 ) : null}
               </View>
 
               {previewManutencao ? (
-                <View className="rounded-2xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-4">
-                  <Text className="text-sm font-medium text-cyan-300">
+                <View
+                  className="rounded-2xl px-4 py-4"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: `${cores.primaria}4D`,
+                    backgroundColor: `${cores.primaria}1A`,
+                  }}
+                >
+                  <Text
+                    className="text-sm font-medium"
+                    style={{ color: cores.primaria }}
+                  >
                     Previsão aproximada
                   </Text>
-                  <Text className="mt-1 text-base text-white">
+                  <Text className="mt-1 text-base" style={{ color: cores.texto }}>
                     {previewManutencao}
                   </Text>
                 </View>
@@ -518,6 +590,7 @@ export default function TelaEditarAlerta() {
               placeholder="25/12/2026"
               teclado="numeric"
               erro={erros.dataAlvo}
+              cores={cores}
             />
           )}
 
@@ -533,14 +606,28 @@ export default function TelaEditarAlerta() {
             }}
             placeholder="Ex: usar óleo Motul"
             multiline
+            cores={cores}
           />
 
-          <View className="flex-row items-center justify-between rounded-2xl border border-slate-700 bg-slate-900 px-4 py-4">
+          <View
+            className="flex-row items-center justify-between rounded-2xl px-4 py-4"
+            style={{
+              borderWidth: 1,
+              borderColor: cores.borda,
+              backgroundColor: cores.fundoCard,
+            }}
+          >
             <View className="pr-4">
-              <Text className="text-base font-bold text-white">
+              <Text
+                className="text-base font-bold"
+                style={{ color: cores.texto }}
+              >
                 Alerta ativo
               </Text>
-              <Text className="mt-1 text-sm text-slate-400">
+              <Text
+                className="mt-1 text-sm"
+                style={{ color: cores.textoSuave }}
+              >
                 Você pode desativar e manter no histórico depois
               </Text>
             </View>
@@ -548,22 +635,28 @@ export default function TelaEditarAlerta() {
             <Switch
               value={ativo}
               onValueChange={setAtivo}
-              trackColor={{ false: "#334155", true: "#06b6d4" }}
+              trackColor={{ false: cores.borda, true: cores.primaria }}
               thumbColor="#ffffff"
             />
           </View>
 
           {erros.geral ? (
-            <Text className="text-sm text-red-400">{erros.geral}</Text>
+            <Text className="text-sm" style={{ color: cores.perigo }}>
+              {erros.geral}
+            </Text>
           ) : null}
 
           <TouchableOpacity
-            className="mt-2 items-center rounded-2xl bg-cyan-500 px-4 py-3"
+            className="mt-2 items-center rounded-2xl px-4 py-3"
+            style={{ backgroundColor: cores.primaria }}
             onPress={salvar}
             activeOpacity={0.8}
             disabled={salvando}
           >
-            <Text className="text-base font-bold text-slate-950">
+            <Text
+              className="text-base font-bold"
+              style={{ color: cores.fundo }}
+            >
               {salvando ? "Salvando..." : "Salvar alerta"}
             </Text>
           </TouchableOpacity>
@@ -573,6 +666,18 @@ export default function TelaEditarAlerta() {
   );
 }
 
+type CoresTema = {
+  fundo: string;
+  fundoSecundario: string;
+  fundoCard: string;
+  borda: string;
+  texto: string;
+  textoSecundario: string;
+  textoSuave: string;
+  primaria: string;
+  perigo: string;
+};
+
 type CampoTextoProps = {
   titulo: string;
   valor: string;
@@ -581,6 +686,7 @@ type CampoTextoProps = {
   erro?: string;
   teclado?: "default" | "numeric";
   multiline?: boolean;
+  cores: CoresTema;
 };
 
 function CampoTexto({
@@ -591,17 +697,29 @@ function CampoTexto({
   erro,
   teclado = "default",
   multiline = false,
+  cores,
 }: CampoTextoProps) {
   return (
     <View>
-      <Text className="mb-2 text-sm font-medium text-slate-200">{titulo}</Text>
+      <Text
+        className="mb-2 text-sm font-medium"
+        style={{ color: cores.textoSecundario }}
+      >
+        {titulo}
+      </Text>
 
       <TextInput
-        className={`rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-base text-white ${
+        className={`rounded-2xl px-4 py-3 text-base ${
           multiline ? "min-h-28" : ""
         }`}
+        style={{
+          borderWidth: 1,
+          borderColor: cores.borda,
+          backgroundColor: cores.fundoCard,
+          color: cores.texto,
+        }}
         placeholder={placeholder}
-        placeholderTextColor="#94a3b8"
+        placeholderTextColor={cores.textoSuave}
         value={valor}
         onChangeText={aoAlterarTexto}
         keyboardType={teclado}
@@ -609,7 +727,11 @@ function CampoTexto({
         textAlignVertical={multiline ? "top" : "auto"}
       />
 
-      {erro ? <Text className="mt-2 text-sm text-red-400">{erro}</Text> : null}
+      {erro ? (
+        <Text className="mt-2 text-sm" style={{ color: cores.perigo }}>
+          {erro}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -618,23 +740,28 @@ type BotaoTipoProps = {
   titulo: string;
   selecionado: boolean;
   onPress: () => void;
+  cores: CoresTema;
 };
 
-function BotaoTipo({ titulo, selecionado, onPress }: BotaoTipoProps) {
+function BotaoTipo({
+  titulo,
+  selecionado,
+  onPress,
+  cores,
+}: BotaoTipoProps) {
   return (
     <TouchableOpacity
-      className={`flex-1 rounded-2xl border px-4 py-3 ${
-        selecionado
-          ? "border-cyan-500 bg-cyan-500/10"
-          : "border-slate-700 bg-slate-900"
-      }`}
+      className="flex-1 rounded-2xl border px-4 py-3"
+      style={{
+        borderColor: selecionado ? cores.primaria : cores.borda,
+        backgroundColor: selecionado ? `${cores.primaria}1A` : cores.fundoCard,
+      }}
       onPress={onPress}
       activeOpacity={0.8}
     >
       <Text
-        className={`text-center font-semibold ${
-          selecionado ? "text-cyan-400" : "text-white"
-        }`}
+        className="text-center font-semibold"
+        style={{ color: selecionado ? cores.primaria : cores.texto }}
       >
         {titulo}
       </Text>
@@ -645,27 +772,38 @@ function BotaoTipo({ titulo, selecionado, onPress }: BotaoTipoProps) {
 type SeletorPeriodoProps = {
   valor: PeriodoUso;
   aoSelecionar: (valor: PeriodoUso) => void;
+  cores: CoresTema;
 };
 
-function SeletorPeriodo({ valor, aoSelecionar }: SeletorPeriodoProps) {
+function SeletorPeriodo({
+  valor,
+  aoSelecionar,
+  cores,
+}: SeletorPeriodoProps) {
   return (
-    <View className="flex-row overflow-hidden rounded-2xl border border-slate-700">
+    <View
+      className="flex-row overflow-hidden rounded-2xl"
+      style={{
+        borderWidth: 1,
+        borderColor: cores.borda,
+      }}
+    >
       {(["dia", "semana", "mes"] as PeriodoUso[]).map((periodo) => {
         const selecionado = valor === periodo;
 
         return (
           <TouchableOpacity
             key={periodo}
-            className={`flex-1 px-3 py-3 ${
-              selecionado ? "bg-cyan-500" : "bg-slate-900"
-            }`}
+            className="flex-1 px-3 py-3"
+            style={{
+              backgroundColor: selecionado ? cores.primaria : cores.fundoCard,
+            }}
             onPress={() => aoSelecionar(periodo)}
             activeOpacity={0.8}
           >
             <Text
-              className={`text-center text-sm font-bold ${
-                selecionado ? "text-slate-950" : "text-white"
-              }`}
+              className="text-center text-sm font-bold"
+              style={{ color: selecionado ? cores.fundo : cores.texto }}
             >
               {periodo === "mes"
                 ? "Mês"

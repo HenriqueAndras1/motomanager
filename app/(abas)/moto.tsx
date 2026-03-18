@@ -17,10 +17,13 @@ import {
 } from "../../src/servicos/moto-selecionada-firebase";
 import { obterUltimaManutencaoPorMotoId } from "../../src/servicos/manutencoes-firebase";
 import AlertaApp from "../../src/componentes/AlertaApp";
+import { useTema } from "../../src/contextos/tema-contexto";
 import { Moto } from "../../src/tipos/moto";
 import { Manutencao } from "../../src/tipos/manutencao";
 
 export default function TelaMoto() {
+  const { cores } = useTema();
+
   const [motos, setMotos] = useState<Moto[]>([]);
   const [motoSelecionada, setMotoSelecionada] = useState<Moto | null>(null);
   const [ultimaManutencao, setUltimaManutencao] = useState<Manutencao | null>(
@@ -79,7 +82,7 @@ export default function TelaMoto() {
         }
       }
 
-      carregarDados();
+      void carregarDados();
     }, []),
   );
 
@@ -158,9 +161,15 @@ export default function TelaMoto() {
 
   if (carregando) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-slate-950">
-        <ActivityIndicator size="large" color="#ffffff" />
-        <Text className="mt-4 text-base text-slate-300">
+      <SafeAreaView
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: cores.fundo }}
+      >
+        <ActivityIndicator size="large" color={cores.primaria} />
+        <Text
+          className="mt-4 text-base"
+          style={{ color: cores.textoSecundario }}
+        >
           Carregando moto...
         </Text>
       </SafeAreaView>
@@ -170,13 +179,18 @@ export default function TelaMoto() {
   if (!motoSelecionada) {
     return (
       <>
-        <SafeAreaView className="flex-1 bg-slate-950">
+        <SafeAreaView className="flex-1" style={{ backgroundColor: cores.fundo }}>
           <View className="flex-1 px-5 pt-14 pb-6">
             <View className="relative">
               <View className="flex-row items-start justify-between">
                 <View className="h-10 w-10" />
 
-                <Text className="text-3xl font-bold text-white">Moto</Text>
+                <Text
+                  className="text-3xl font-bold"
+                  style={{ color: cores.texto }}
+                >
+                  Moto
+                </Text>
 
                 <TouchableOpacity
                   className="h-10 w-10 items-center justify-center"
@@ -188,7 +202,7 @@ export default function TelaMoto() {
                   <Ionicons
                     name="ellipsis-vertical"
                     size={20}
-                    color="#ffffff"
+                    color={cores.texto}
                   />
                 </TouchableOpacity>
               </View>
@@ -200,7 +214,14 @@ export default function TelaMoto() {
                     activeOpacity={1}
                     onPress={() => setMenuAcoesAberto(false)}
                   />
-                  <View className="absolute right-0 top-12 z-20 w-52 rounded-2xl border border-slate-800 bg-slate-900 p-2">
+                  <View
+                    className="absolute right-0 top-12 z-20 w-52 rounded-2xl p-2"
+                    style={{
+                      borderWidth: 1,
+                      borderColor: cores.borda,
+                      backgroundColor: cores.fundoCard,
+                    }}
+                  >
                     <TouchableOpacity
                       className="flex-row items-center rounded-xl px-4 py-3"
                       onPress={irParaNovaMoto}
@@ -209,9 +230,12 @@ export default function TelaMoto() {
                       <Ionicons
                         name="add-circle-outline"
                         size={18}
-                        color="#22d3ee"
+                        color={cores.primaria}
                       />
-                      <Text className="ml-3 text-base font-medium text-white">
+                      <Text
+                        className="ml-3 text-base font-medium"
+                        style={{ color: cores.texto }}
+                      >
                         Adicionar moto
                       </Text>
                     </TouchableOpacity>
@@ -221,7 +245,10 @@ export default function TelaMoto() {
             </View>
 
             <View className="flex-1 items-center justify-center px-6">
-              <Text className="text-center text-base text-slate-300">
+              <Text
+                className="text-center text-base"
+                style={{ color: cores.textoSecundario }}
+              >
                 Nenhuma moto cadastrada.
               </Text>
             </View>
@@ -269,7 +296,7 @@ export default function TelaMoto() {
 
   return (
     <>
-      <SafeAreaView className="flex-1 bg-slate-950">
+      <SafeAreaView className="flex-1" style={{ backgroundColor: cores.fundo }}>
         <View
           className="flex-1"
           onLayout={(evento) => {
@@ -302,12 +329,18 @@ export default function TelaMoto() {
                   }}
                   disabled={!temMaisDeUmaMoto}
                 >
-                  <Text className="text-center text-3xl font-bold text-white">
+                  <Text
+                    className="text-center text-3xl font-bold"
+                    style={{ color: cores.texto }}
+                  >
                     {motoSelecionada.marca} {motoSelecionada.modelo}
                   </Text>
 
                   {temMaisDeUmaMoto ? (
-                    <Text className="mt-2 text-sm font-medium text-cyan-400">
+                    <Text
+                      className="mt-2 text-sm font-medium"
+                      style={{ color: cores.primaria }}
+                    >
                       Toque para trocar de moto
                     </Text>
                   ) : null}
@@ -324,33 +357,49 @@ export default function TelaMoto() {
                   <Ionicons
                     name="ellipsis-vertical"
                     size={20}
-                    color="#ffffff"
+                    color={cores.texto}
                   />
                 </TouchableOpacity>
               </View>
 
               {seletorAberto ? (
-                <View className="mt-4 w-full rounded-2xl border border-slate-800 bg-slate-900 p-3">
+                <View
+                  className="mt-4 w-full rounded-2xl p-3"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: cores.borda,
+                    backgroundColor: cores.fundoCard,
+                  }}
+                >
                   {motos.map((moto) => {
                     const estaSelecionada = moto.id === motoSelecionada.id;
 
                     return (
                       <TouchableOpacity
                         key={moto.id}
-                        className={`rounded-xl px-4 py-3 ${
-                          estaSelecionada ? "bg-slate-800" : "bg-transparent"
-                        }`}
+                        className="rounded-xl px-4 py-3"
+                        style={{
+                          backgroundColor: estaSelecionada
+                            ? cores.borda
+                            : "transparent",
+                        }}
                         onPress={() => selecionarMoto(moto)}
                         activeOpacity={0.8}
                       >
                         <Text
-                          className={`text-base font-semibold ${
-                            estaSelecionada ? "text-cyan-400" : "text-white"
-                          }`}
+                          className="text-base font-semibold"
+                          style={{
+                            color: estaSelecionada
+                              ? cores.primaria
+                              : cores.texto,
+                          }}
                         >
                           {moto.marca} {moto.modelo}
                         </Text>
-                        <Text className="mt-1 text-sm text-slate-400">
+                        <Text
+                          className="mt-1 text-sm"
+                          style={{ color: cores.textoSuave }}
+                        >
                           {moto.ano} • {moto.cor}
                         </Text>
                       </TouchableOpacity>
@@ -368,8 +417,18 @@ export default function TelaMoto() {
               />
             </View>
 
-            <View className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-5">
-              <Text className="text-lg font-bold text-white">
+            <View
+              className="mt-6 rounded-2xl p-5"
+              style={{
+                borderWidth: 1,
+                borderColor: cores.borda,
+                backgroundColor: cores.fundoCard,
+              }}
+            >
+              <Text
+                className="text-lg font-bold"
+                style={{ color: cores.texto }}
+              >
                 Resumo da moto
               </Text>
 
@@ -377,14 +436,20 @@ export default function TelaMoto() {
                 <CardInformacao
                   titulo="Ano"
                   valor={String(motoSelecionada.ano)}
+                  cores={cores}
                 />
-                <CardInformacao titulo="Cor" valor={motoSelecionada.cor} />
+                <CardInformacao
+                  titulo="Cor"
+                  valor={motoSelecionada.cor}
+                  cores={cores}
+                />
               </View>
 
               <View className="mt-5 flex-row gap-6">
                 <CardInformacao
                   titulo="KM atual"
                   valor={`${motoSelecionada.quilometragem.toLocaleString("pt-BR")} km`}
+                  cores={cores}
                 />
                 <CardInformacao
                   titulo="Placa"
@@ -393,44 +458,73 @@ export default function TelaMoto() {
                       ? motoSelecionada.placa
                       : "Não informada"
                   }
+                  cores={cores}
                 />
               </View>
             </View>
 
-            <View className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-5">
-              <Text className="text-lg font-bold text-white">
+            <View
+              className="mt-6 rounded-2xl p-5"
+              style={{
+                borderWidth: 1,
+                borderColor: cores.borda,
+                backgroundColor: cores.fundoCard,
+              }}
+            >
+              <Text
+                className="text-lg font-bold"
+                style={{ color: cores.texto }}
+              >
                 Última manutenção
               </Text>
 
               {ultimaManutencao ? (
                 <View className="mt-4">
-                  <Text className="text-base font-bold text-white">
+                  <Text
+                    className="text-base font-bold"
+                    style={{ color: cores.texto }}
+                  >
                     {ultimaManutencao.tipo}
                   </Text>
 
-                  <Text className="mt-3 text-sm text-slate-400">
+                  <Text
+                    className="mt-3 text-sm"
+                    style={{ color: cores.textoSuave }}
+                  >
                     Data: {formatarData(ultimaManutencao.data)}
                   </Text>
 
-                  <Text className="mt-2 text-sm text-slate-400">
+                  <Text
+                    className="mt-2 text-sm"
+                    style={{ color: cores.textoSuave }}
+                  >
                     Quilometragem:{" "}
                     {ultimaManutencao.quilometragem.toLocaleString("pt-BR")} km
                   </Text>
 
                   {typeof ultimaManutencao.custo === "number" ? (
-                    <Text className="mt-2 text-sm text-slate-400">
+                    <Text
+                      className="mt-2 text-sm"
+                      style={{ color: cores.textoSuave }}
+                    >
                       Valor: {formatarBRL(ultimaManutencao.custo)}
                     </Text>
                   ) : null}
 
                   {ultimaManutencao.observacao ? (
-                    <Text className="mt-3 text-base text-slate-300">
+                    <Text
+                      className="mt-3 text-base"
+                      style={{ color: cores.textoSecundario }}
+                    >
                       {ultimaManutencao.observacao}
                     </Text>
                   ) : null}
                 </View>
               ) : (
-                <Text className="mt-4 text-base text-slate-300">
+                <Text
+                  className="mt-4 text-base"
+                  style={{ color: cores.textoSecundario }}
+                >
                   Nenhuma manutenção registrada até o momento.
                 </Text>
               )}
@@ -445,7 +539,14 @@ export default function TelaMoto() {
                 onPress={() => setMenuAcoesAberto(false)}
               />
 
-              <View className="absolute right-5 top-24 w-56 rounded-2xl border border-slate-800 bg-slate-900 p-2">
+              <View
+                className="absolute right-5 top-24 w-56 rounded-2xl p-2"
+                style={{
+                  borderWidth: 1,
+                  borderColor: cores.borda,
+                  backgroundColor: cores.fundoCard,
+                }}
+              >
                 <TouchableOpacity
                   className="flex-row items-center rounded-xl px-4 py-3"
                   onPress={irParaNovaMoto}
@@ -454,9 +555,12 @@ export default function TelaMoto() {
                   <Ionicons
                     name="add-circle-outline"
                     size={18}
-                    color="#22d3ee"
+                    color={cores.primaria}
                   />
-                  <Text className="ml-3 text-base font-medium text-white">
+                  <Text
+                    className="ml-3 text-base font-medium"
+                    style={{ color: cores.texto }}
+                  >
                     Adicionar moto
                   </Text>
                 </TouchableOpacity>
@@ -466,8 +570,15 @@ export default function TelaMoto() {
                   onPress={irParaEditarMoto}
                   activeOpacity={0.8}
                 >
-                  <Ionicons name="create-outline" size={18} color="#22d3ee" />
-                  <Text className="ml-3 text-base font-medium text-white">
+                  <Ionicons
+                    name="create-outline"
+                    size={18}
+                    color={cores.primaria}
+                  />
+                  <Text
+                    className="ml-3 text-base font-medium"
+                    style={{ color: cores.texto }}
+                  >
                     Editar moto
                   </Text>
                 </TouchableOpacity>
@@ -479,12 +590,19 @@ export default function TelaMoto() {
                   disabled={excluindo}
                 >
                   {excluindo ? (
-                    <ActivityIndicator size="small" color="#ef4444" />
+                    <ActivityIndicator size="small" color={cores.perigo} />
                   ) : (
-                    <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                    <Ionicons
+                      name="trash-outline"
+                      size={18}
+                      color={cores.perigo}
+                    />
                   )}
 
-                  <Text className="ml-3 text-base font-medium text-red-400">
+                  <Text
+                    className="ml-3 text-base font-medium"
+                    style={{ color: cores.perigo }}
+                  >
                     {excluindo ? "Excluindo..." : "Excluir moto"}
                   </Text>
                 </TouchableOpacity>
@@ -535,13 +653,34 @@ export default function TelaMoto() {
 type CardInformacaoProps = {
   titulo: string;
   valor: string;
+  cores: {
+    fundo: string;
+    fundoSecundario: string;
+    fundoCard: string;
+    borda: string;
+    texto: string;
+    textoSecundario: string;
+    textoSuave: string;
+    primaria: string;
+    perigo: string;
+  };
 };
 
-function CardInformacao({ titulo, valor }: CardInformacaoProps) {
+function CardInformacao({ titulo, valor, cores }: CardInformacaoProps) {
   return (
     <View className="flex-1">
-      <Text className="text-sm font-medium text-slate-400">{titulo}</Text>
-      <Text className="mt-2 text-base font-semibold text-white">{valor}</Text>
+      <Text
+        className="text-sm font-medium"
+        style={{ color: cores.textoSuave }}
+      >
+        {titulo}
+      </Text>
+      <Text
+        className="mt-2 text-base font-semibold"
+        style={{ color: cores.texto }}
+      >
+        {valor}
+      </Text>
     </View>
   );
 }

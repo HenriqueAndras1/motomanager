@@ -16,6 +16,7 @@ import {
   obterAlertaPorId,
   reativarAlerta,
 } from "../../src/servicos/alertas-firebase";
+import { useTema } from "../../src/contextos/tema-contexto";
 import { Alerta } from "../../src/tipos/alerta";
 
 type ParametrosRota = {
@@ -23,6 +24,7 @@ type ParametrosRota = {
 };
 
 export default function TelaDetalhesAlerta() {
+  const { cores } = useTema();
   const { id } = useLocalSearchParams<ParametrosRota>();
 
   const [alerta, setAlerta] = useState<Alerta | null>(null);
@@ -54,7 +56,7 @@ export default function TelaDetalhesAlerta() {
       }
     }
 
-    carregar();
+    void carregar();
   }, [id]);
 
   function voltar(): void {
@@ -164,9 +166,15 @@ export default function TelaDetalhesAlerta() {
 
   if (carregando) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-slate-950">
-        <ActivityIndicator size="large" color="#ffffff" />
-        <Text className="mt-4 text-base text-slate-300">
+      <SafeAreaView
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: cores.fundo }}
+      >
+        <ActivityIndicator size="large" color={cores.primaria} />
+        <Text
+          className="mt-4 text-base"
+          style={{ color: cores.textoSecundario }}
+        >
           Carregando alerta...
         </Text>
       </SafeAreaView>
@@ -175,9 +183,9 @@ export default function TelaDetalhesAlerta() {
 
   if (!alerta) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-950">
+      <SafeAreaView className="flex-1" style={{ backgroundColor: cores.fundo }}>
         <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-base text-slate-300">
+          <Text className="text-base" style={{ color: cores.textoSecundario }}>
             Alerta não encontrado.
           </Text>
         </View>
@@ -189,24 +197,31 @@ export default function TelaDetalhesAlerta() {
 
   return (
     <>
-      <SafeAreaView className="flex-1 bg-slate-950">
+      <SafeAreaView className="flex-1" style={{ backgroundColor: cores.fundo }}>
         <View className="flex-1">
           <ScrollView contentContainerClassName="px-5 pt-14 pb-6">
             <View className="relative">
               <View className="mb-6 flex-row items-center justify-between">
                 <TouchableOpacity
-                  className="h-10 w-10 items-center justify-center rounded-full bg-slate-900"
+                  className="h-10 w-10 items-center justify-center rounded-full"
+                  style={{ backgroundColor: cores.fundoCard }}
                   onPress={voltar}
                   activeOpacity={0.8}
                 >
-                  <Ionicons name="arrow-back" size={22} color="#ffffff" />
+                  <Ionicons name="arrow-back" size={22} color={cores.texto} />
                 </TouchableOpacity>
 
                 <View className="flex-1 px-4">
-                  <Text className="text-center text-3xl font-bold text-white">
+                  <Text
+                    className="text-center text-3xl font-bold"
+                    style={{ color: cores.texto }}
+                  >
                     Alerta
                   </Text>
-                  <Text className="mt-1 text-center text-base text-slate-300">
+                  <Text
+                    className="mt-1 text-center text-base"
+                    style={{ color: cores.textoSecundario }}
+                  >
                     Detalhes do alerta
                   </Text>
                 </View>
@@ -221,33 +236,49 @@ export default function TelaDetalhesAlerta() {
                   <Ionicons
                     name="ellipsis-vertical"
                     size={20}
-                    color="#ffffff"
+                    color={cores.texto}
                   />
                 </TouchableOpacity>
               </View>
 
-              <View className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+              <View
+                className="rounded-2xl p-5"
+                style={{
+                  borderWidth: 1,
+                  borderColor: cores.borda,
+                  backgroundColor: cores.fundoCard,
+                }}
+              >
                 <View className="flex-row items-start justify-between">
-                  <Text className="flex-1 pr-3 text-xl font-bold text-white">
+                  <Text
+                    className="flex-1 pr-3 text-xl font-bold"
+                    style={{ color: cores.texto }}
+                  >
                     {alerta.titulo}
                   </Text>
 
                   <View
-                    className={`rounded-full px-3 py-1 ${
-                      alertaAtivo ? "bg-cyan-500/15" : "bg-slate-800"
-                    }`}
+                    className="rounded-full px-3 py-1"
+                    style={{
+                      backgroundColor: alertaAtivo
+                        ? `${cores.primaria}26`
+                        : cores.borda,
+                    }}
                   >
                     <Text
-                      className={`text-xs font-bold ${
-                        alertaAtivo ? "text-cyan-400" : "text-slate-300"
-                      }`}
+                      className="text-xs font-bold"
+                      style={{
+                        color: alertaAtivo
+                          ? cores.primaria
+                          : cores.textoSecundario,
+                      }}
                     >
                       {alertaAtivo ? "ATIVO" : "HISTÓRICO"}
                     </Text>
                   </View>
                 </View>
 
-                <View className="mt-4 gap-4">
+                <View className="mt-4">
                   <LinhaInformacao
                     titulo="Tipo"
                     valor={
@@ -255,6 +286,7 @@ export default function TelaDetalhesAlerta() {
                         ? "Manutenção por quilometragem"
                         : "Alerta por data"
                     }
+                    cores={cores}
                   />
 
                   {alerta.tipo === "manutencao_km" ? (
@@ -266,6 +298,7 @@ export default function TelaDetalhesAlerta() {
                             ? `${alerta.quilometragemAtual.toLocaleString("pt-BR")} km`
                             : "Não informada"
                         }
+                        cores={cores}
                       />
                       <LinhaInformacao
                         titulo="Quilometragem alvo"
@@ -274,6 +307,7 @@ export default function TelaDetalhesAlerta() {
                             ? `${alerta.quilometragemObjetivo.toLocaleString("pt-BR")} km`
                             : "Não informada"
                         }
+                        cores={cores}
                       />
                       <LinhaInformacao
                         titulo="Quilometragem faltante"
@@ -282,6 +316,7 @@ export default function TelaDetalhesAlerta() {
                             ? `${alerta.quilometragemFaltante.toLocaleString("pt-BR")} km`
                             : "Não informada"
                         }
+                        cores={cores}
                       />
                       <LinhaInformacao
                         titulo="Uso médio"
@@ -293,6 +328,7 @@ export default function TelaDetalhesAlerta() {
                               )} km por ${formatarPeriodo(alerta.usoMedioPeriodo)}`
                             : "Não informado"
                         }
+                        cores={cores}
                       />
                       <LinhaInformacao
                         titulo="Data prevista"
@@ -301,6 +337,7 @@ export default function TelaDetalhesAlerta() {
                             ? formatarData(alerta.dataPrevista)
                             : "Não calculada"
                         }
+                        cores={cores}
                       />
                     </>
                   ) : (
@@ -311,22 +348,26 @@ export default function TelaDetalhesAlerta() {
                           ? formatarData(alerta.dataAlvo)
                           : "Não informada"
                       }
+                      cores={cores}
                     />
                   )}
 
                   <LinhaInformacao
                     titulo="Observação"
                     valor={alerta.observacao ? alerta.observacao : "Não informada"}
+                    cores={cores}
                   />
 
                   <LinhaInformacao
                     titulo="Criado em"
                     valor={formatarDataHora(alerta.criadoEm)}
+                    cores={cores}
                   />
 
                   <LinhaInformacao
                     titulo="Atualizado em"
                     valor={formatarDataHora(alerta.atualizadoEm)}
+                    cores={cores}
                   />
 
                   <LinhaInformacao
@@ -336,6 +377,7 @@ export default function TelaDetalhesAlerta() {
                         ? formatarDataHora(alerta.concluidoEm)
                         : "Ainda não concluído"
                     }
+                    cores={cores}
                   />
                 </View>
               </View>
@@ -350,14 +392,28 @@ export default function TelaDetalhesAlerta() {
                 onPress={() => setMenuAcoesAberto(false)}
               />
 
-              <View className="absolute right-5 top-24 w-56 rounded-2xl border border-slate-800 bg-slate-900 p-2">
+              <View
+                className="absolute right-5 top-24 w-56 rounded-2xl p-2"
+                style={{
+                  borderWidth: 1,
+                  borderColor: cores.borda,
+                  backgroundColor: cores.fundoCard,
+                }}
+              >
                 <TouchableOpacity
                   className="flex-row items-center rounded-xl px-4 py-3"
                   onPress={irParaEditar}
                   activeOpacity={0.8}
                 >
-                  <Ionicons name="create-outline" size={18} color="#22d3ee" />
-                  <Text className="ml-3 text-base font-medium text-white">
+                  <Ionicons
+                    name="create-outline"
+                    size={18}
+                    color={cores.primaria}
+                  />
+                  <Text
+                    className="ml-3 text-base font-medium"
+                    style={{ color: cores.texto }}
+                  >
                     Editar alerta
                   </Text>
                 </TouchableOpacity>
@@ -413,12 +469,19 @@ export default function TelaDetalhesAlerta() {
                   disabled={processando}
                 >
                   {processando ? (
-                    <ActivityIndicator size="small" color="#ef4444" />
+                    <ActivityIndicator size="small" color={cores.perigo} />
                   ) : (
-                    <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                    <Ionicons
+                      name="trash-outline"
+                      size={18}
+                      color={cores.perigo}
+                    />
                   )}
 
-                  <Text className="ml-3 text-base font-medium text-red-400">
+                  <Text
+                    className="ml-3 text-base font-medium"
+                    style={{ color: cores.perigo }}
+                  >
                     {processando ? "Processando..." : "Excluir alerta"}
                   </Text>
                 </TouchableOpacity>
@@ -489,16 +552,36 @@ export default function TelaDetalhesAlerta() {
   );
 }
 
+type CoresTema = {
+  fundo: string;
+  fundoSecundario: string;
+  fundoCard: string;
+  borda: string;
+  texto: string;
+  textoSecundario: string;
+  textoSuave: string;
+  primaria: string;
+  perigo: string;
+};
+
 type LinhaInformacaoProps = {
   titulo: string;
   valor: string;
+  cores: CoresTema;
 };
 
-function LinhaInformacao({ titulo, valor }: LinhaInformacaoProps) {
+function LinhaInformacao({ titulo, valor, cores }: LinhaInformacaoProps) {
   return (
-    <View className="border-b border-slate-800 pb-3">
-      <Text className="text-sm font-medium text-slate-400">{titulo}</Text>
-      <Text className="mt-1 text-base text-white">{valor}</Text>
+    <View className="mt-3">
+      <Text
+        className="text-sm font-medium"
+        style={{ color: cores.textoSuave }}
+      >
+        {titulo}
+      </Text>
+      <Text className="mt-1 text-base" style={{ color: cores.texto }}>
+        {valor}
+      </Text>
     </View>
   );
 }

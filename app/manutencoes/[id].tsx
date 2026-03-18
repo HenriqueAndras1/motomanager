@@ -14,6 +14,7 @@ import {
   obterManutencaoPorId,
 } from "../../src/servicos/manutencoes-firebase";
 import AlertaApp from "../../src/componentes/AlertaApp";
+import { useTema } from "../../src/contextos/tema-contexto";
 import { Manutencao } from "../../src/tipos/manutencao";
 
 type ParametrosRota = {
@@ -21,7 +22,9 @@ type ParametrosRota = {
 };
 
 export default function TelaDetalhesManutencao() {
+  const { cores } = useTema();
   const { id } = useLocalSearchParams<ParametrosRota>();
+
   const [manutencao, setManutencao] = useState<Manutencao | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [excluindo, setExcluindo] = useState(false);
@@ -44,7 +47,7 @@ export default function TelaDetalhesManutencao() {
       }
     }
 
-    carregar();
+    void carregar();
   }, [id]);
 
   function voltar(): void {
@@ -88,9 +91,15 @@ export default function TelaDetalhesManutencao() {
   if (carregando) {
     return (
       <>
-        <SafeAreaView className="flex-1 items-center justify-center bg-slate-950">
-          <ActivityIndicator size="large" color="#ffffff" />
-          <Text className="mt-4 text-base text-slate-300">
+        <SafeAreaView
+          className="flex-1 items-center justify-center"
+          style={{ backgroundColor: cores.fundo }}
+        >
+          <ActivityIndicator size="large" color={cores.primaria} />
+          <Text
+            className="mt-4 text-base"
+            style={{ color: cores.textoSecundario }}
+          >
             Carregando manutenção...
           </Text>
         </SafeAreaView>
@@ -129,9 +138,9 @@ export default function TelaDetalhesManutencao() {
   if (!manutencao) {
     return (
       <>
-        <SafeAreaView className="flex-1 bg-slate-950">
+        <SafeAreaView className="flex-1" style={{ backgroundColor: cores.fundo }}>
           <View className="flex-1 items-center justify-center px-6">
-            <Text className="text-base text-slate-300">
+            <Text className="text-base" style={{ color: cores.textoSecundario }}>
               Manutenção não encontrada.
             </Text>
           </View>
@@ -170,24 +179,31 @@ export default function TelaDetalhesManutencao() {
 
   return (
     <>
-      <SafeAreaView className="flex-1 bg-slate-950">
+      <SafeAreaView className="flex-1" style={{ backgroundColor: cores.fundo }}>
         <View className="flex-1">
           <ScrollView contentContainerClassName="px-5 pt-14 pb-6">
             <View className="relative">
               <View className="mb-6 flex-row items-center justify-between">
                 <TouchableOpacity
-                  className="h-10 w-10 items-center justify-center rounded-full bg-slate-900"
+                  className="h-10 w-10 items-center justify-center rounded-full"
+                  style={{ backgroundColor: cores.fundoCard }}
                   onPress={voltar}
                   activeOpacity={0.8}
                 >
-                  <Ionicons name="arrow-back" size={22} color="#ffffff" />
+                  <Ionicons name="arrow-back" size={22} color={cores.texto} />
                 </TouchableOpacity>
 
                 <View className="flex-1 px-4">
-                  <Text className="text-center text-3xl font-bold text-white">
+                  <Text
+                    className="text-center text-3xl font-bold"
+                    style={{ color: cores.texto }}
+                  >
                     Manutenção
                   </Text>
-                  <Text className="mt-1 text-center text-base text-slate-300">
+                  <Text
+                    className="mt-1 text-center text-base"
+                    style={{ color: cores.textoSecundario }}
+                  >
                     Detalhes do registro
                   </Text>
                 </View>
@@ -202,24 +218,36 @@ export default function TelaDetalhesManutencao() {
                   <Ionicons
                     name="ellipsis-vertical"
                     size={20}
-                    color="#ffffff"
+                    color={cores.texto}
                   />
                 </TouchableOpacity>
               </View>
 
-              <View className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
-                <Text className="text-xl font-bold text-white">
+              <View
+                className="rounded-2xl p-5"
+                style={{
+                  borderWidth: 1,
+                  borderColor: cores.borda,
+                  backgroundColor: cores.fundoCard,
+                }}
+              >
+                <Text
+                  className="text-xl font-bold"
+                  style={{ color: cores.texto }}
+                >
                   {manutencao.tipo}
                 </Text>
 
-                <View className="mt-4 gap-4">
+                <View className="mt-4">
                   <LinhaInformacao
                     titulo="Data"
                     valor={formatarData(manutencao.data)}
+                    cores={cores}
                   />
                   <LinhaInformacao
                     titulo="Quilometragem"
                     valor={`${manutencao.quilometragem.toLocaleString("pt-BR")} km`}
+                    cores={cores}
                   />
                   <LinhaInformacao
                     titulo="Valor"
@@ -228,6 +256,7 @@ export default function TelaDetalhesManutencao() {
                         ? formatarBRL(manutencao.custo)
                         : "Não informado"
                     }
+                    cores={cores}
                   />
                   <LinhaInformacao
                     titulo="Observação"
@@ -236,6 +265,7 @@ export default function TelaDetalhesManutencao() {
                         ? manutencao.observacao
                         : "Não informada"
                     }
+                    cores={cores}
                   />
                 </View>
               </View>
@@ -250,14 +280,28 @@ export default function TelaDetalhesManutencao() {
                 onPress={() => setMenuAcoesAberto(false)}
               />
 
-              <View className="absolute right-5 top-24 w-56 rounded-2xl border border-slate-800 bg-slate-900 p-2">
+              <View
+                className="absolute right-5 top-24 w-56 rounded-2xl p-2"
+                style={{
+                  borderWidth: 1,
+                  borderColor: cores.borda,
+                  backgroundColor: cores.fundoCard,
+                }}
+              >
                 <TouchableOpacity
                   className="flex-row items-center rounded-xl px-4 py-3"
                   onPress={irParaEditar}
                   activeOpacity={0.8}
                 >
-                  <Ionicons name="create-outline" size={18} color="#22d3ee" />
-                  <Text className="ml-3 text-base font-medium text-white">
+                  <Ionicons
+                    name="create-outline"
+                    size={18}
+                    color={cores.primaria}
+                  />
+                  <Text
+                    className="ml-3 text-base font-medium"
+                    style={{ color: cores.texto }}
+                  >
                     Editar manutenção
                   </Text>
                 </TouchableOpacity>
@@ -269,12 +313,19 @@ export default function TelaDetalhesManutencao() {
                   disabled={excluindo}
                 >
                   {excluindo ? (
-                    <ActivityIndicator size="small" color="#ef4444" />
+                    <ActivityIndicator size="small" color={cores.perigo} />
                   ) : (
-                    <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                    <Ionicons
+                      name="trash-outline"
+                      size={18}
+                      color={cores.perigo}
+                    />
                   )}
 
-                  <Text className="ml-3 text-base font-medium text-red-400">
+                  <Text
+                    className="ml-3 text-base font-medium"
+                    style={{ color: cores.perigo }}
+                  >
                     {excluindo ? "Excluindo..." : "Excluir manutenção"}
                   </Text>
                 </TouchableOpacity>
@@ -315,16 +366,37 @@ export default function TelaDetalhesManutencao() {
   );
 }
 
+type CoresTema = {
+  fundo: string;
+  fundoSecundario: string;
+  fundoCard: string;
+  borda: string;
+  texto: string;
+  textoSecundario: string;
+  textoSuave: string;
+  primaria: string;
+  perigo: string;
+};
+
 type LinhaInformacaoProps = {
   titulo: string;
   valor: string;
+  cores: CoresTema;
 };
 
-function LinhaInformacao({ titulo, valor }: LinhaInformacaoProps) {
+function LinhaInformacao({ titulo, valor, cores }: LinhaInformacaoProps) {
   return (
-    <View className="border-b border-slate-800 pb-3">
-      <Text className="text-sm font-medium text-slate-400">{titulo}</Text>
-      <Text className="mt-1 text-base text-white">{valor}</Text>
+    <View className="mt-3">
+      <Text
+        className="text-sm font-medium"
+        style={{ color: cores.textoSuave }}
+      >
+        {titulo}
+      </Text>
+
+      <Text className="mt-1 text-base" style={{ color: cores.texto }}>
+        {valor}
+      </Text>
     </View>
   );
 }

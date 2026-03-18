@@ -17,6 +17,7 @@ import { buscarMotoSelecionadaId } from "../../src/servicos/moto-selecionada-fir
 import { cadastrarManutencao } from "../../src/servicos/manutencoes-firebase";
 import { obterMotoPorId } from "../../src/servicos/motos-firebase";
 import AlertaApp from "../../src/componentes/AlertaApp";
+import { useTema } from "../../src/contextos/tema-contexto";
 
 const ITENS_MANUTENCAO: { secao: string; itens: string[] }[] = [
   {
@@ -218,6 +219,8 @@ type ErrosFormulario = {
 };
 
 export default function TelaNovaManutencao() {
+  const { cores } = useTema();
+
   const [km, setKm] = useState("");
   const [dataBR, setDataBR] = useState(isoParaBR(hojeISO()));
   const [valorCentavosDigits, setValorCentavosDigits] = useState("");
@@ -267,7 +270,7 @@ export default function TelaNovaManutencao() {
       }
     }
 
-    preencherKmAtual();
+    void preencherKmAtual();
 
     return () => {
       ativo = false;
@@ -416,7 +419,7 @@ export default function TelaNovaManutencao() {
 
   return (
     <>
-      <SafeAreaView className="flex-1 bg-slate-950">
+      <SafeAreaView className="flex-1" style={{ backgroundColor: cores.fundo }}>
         <KeyboardAvoidingView
           className="flex-1"
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -429,18 +432,25 @@ export default function TelaNovaManutencao() {
             >
               <View className="mb-6 flex-row items-center justify-between">
                 <TouchableOpacity
-                  className="h-10 w-10 items-center justify-center rounded-full bg-slate-900"
+                  className="h-10 w-10 items-center justify-center rounded-full"
+                  style={{ backgroundColor: cores.fundoCard }}
                   onPress={voltar}
                   activeOpacity={0.8}
                 >
-                  <Ionicons name="arrow-back" size={22} color="#ffffff" />
+                  <Ionicons name="arrow-back" size={22} color={cores.texto} />
                 </TouchableOpacity>
 
                 <View className="flex-1 px-4">
-                  <Text className="text-center text-3xl font-bold text-white">
+                  <Text
+                    className="text-center text-3xl font-bold"
+                    style={{ color: cores.texto }}
+                  >
                     Nova manutenção
                   </Text>
-                  <Text className="mt-1 text-center text-base text-slate-300">
+                  <Text
+                    className="mt-1 text-center text-base"
+                    style={{ color: cores.textoSecundario }}
+                  >
                     Registre uma manutenção da moto selecionada.
                   </Text>
                 </View>
@@ -449,32 +459,53 @@ export default function TelaNovaManutencao() {
               </View>
 
               <View className="gap-3">
-                <Text className="text-sm font-medium text-slate-200">
+                <Text
+                  className="text-sm font-medium"
+                  style={{ color: cores.textoSecundario }}
+                >
                   Itens da manutenção
                 </Text>
 
                 <Pressable
                   onPress={() => setModalAberto(true)}
-                  className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3"
+                  className="rounded-2xl px-4 py-3"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: cores.borda,
+                    backgroundColor: cores.fundoCard,
+                  }}
                 >
                   <View className="flex-row items-center justify-between">
                     <View className="flex-1 pr-3">
-                      <Text className="text-base font-bold text-white">
+                      <Text
+                        className="text-base font-bold"
+                        style={{ color: cores.texto }}
+                      >
                         {listaSelecionados.length > 0
                           ? `${listaSelecionados.length} item(ns) selecionado(s)`
                           : "Selecionar itens"}
                       </Text>
-                      <Text className="mt-1 text-sm text-slate-400">
+                      <Text
+                        className="mt-1 text-sm"
+                        style={{ color: cores.textoSuave }}
+                      >
                         Toque para abrir a lista
                       </Text>
                     </View>
 
-                    <Text className="text-xl font-bold text-white">›</Text>
+                    <Text
+                      className="text-xl font-bold"
+                      style={{ color: cores.texto }}
+                    >
+                      ›
+                    </Text>
                   </View>
                 </Pressable>
 
                 {erros.itens ? (
-                  <Text className="text-sm text-red-400">{erros.itens}</Text>
+                  <Text className="text-sm" style={{ color: cores.perigo }}>
+                    {erros.itens}
+                  </Text>
                 ) : null}
 
                 {listaSelecionados.length > 0 ? (
@@ -482,15 +513,35 @@ export default function TelaNovaManutencao() {
                     {listaSelecionados.slice(0, 6).map((item) => (
                       <View
                         key={item}
-                        className="mb-2 mr-2 rounded-full border border-slate-700 bg-slate-900 px-3 py-2"
+                        className="mb-2 mr-2 rounded-full px-3 py-2"
+                        style={{
+                          borderWidth: 1,
+                          borderColor: cores.borda,
+                          backgroundColor: cores.fundoCard,
+                        }}
                       >
-                        <Text className="font-semibold text-white">{item}</Text>
+                        <Text
+                          className="font-semibold"
+                          style={{ color: cores.texto }}
+                        >
+                          {item}
+                        </Text>
                       </View>
                     ))}
 
                     {listaSelecionados.length > 6 ? (
-                      <View className="mb-2 mr-2 rounded-full border border-slate-700 bg-slate-900 px-3 py-2">
-                        <Text className="font-bold text-white">
+                      <View
+                        className="mb-2 mr-2 rounded-full px-3 py-2"
+                        style={{
+                          borderWidth: 1,
+                          borderColor: cores.borda,
+                          backgroundColor: cores.fundoCard,
+                        }}
+                      >
+                        <Text
+                          className="font-bold"
+                          style={{ color: cores.texto }}
+                        >
                           +{listaSelecionados.length - 6} mais
                         </Text>
                       </View>
@@ -512,6 +563,7 @@ export default function TelaNovaManutencao() {
                   placeholder="10.000"
                   teclado="numeric"
                   erro={erros.quilometragem}
+                  cores={cores}
                 />
 
                 <CampoTexto
@@ -528,6 +580,7 @@ export default function TelaNovaManutencao() {
                   placeholder="25/02/2026"
                   teclado="numeric"
                   erro={erros.data}
+                  cores={cores}
                 />
 
                 <CampoTexto
@@ -544,6 +597,7 @@ export default function TelaNovaManutencao() {
                   }}
                   placeholder="R$ 0,00"
                   teclado="numeric"
+                  cores={cores}
                 />
 
                 <CampoTexto
@@ -558,19 +612,26 @@ export default function TelaNovaManutencao() {
                   }}
                   placeholder="Ex: óleo e filtro trocados"
                   multiline
+                  cores={cores}
                 />
 
                 {erros.geral ? (
-                  <Text className="text-sm text-red-400">{erros.geral}</Text>
+                  <Text className="text-sm" style={{ color: cores.perigo }}>
+                    {erros.geral}
+                  </Text>
                 ) : null}
 
                 <TouchableOpacity
-                  className="mt-2 items-center rounded-2xl bg-cyan-500 px-4 py-3"
+                  className="mt-2 items-center rounded-2xl px-4 py-3"
+                  style={{ backgroundColor: cores.primaria }}
                   onPress={salvar}
                   activeOpacity={0.8}
                   disabled={salvando}
                 >
-                  <Text className="text-base font-bold text-slate-950">
+                  <Text
+                    className="text-base font-bold"
+                    style={{ color: cores.fundo }}
+                  >
                     {salvando ? "Salvando..." : "Salvar manutenção"}
                   </Text>
                 </TouchableOpacity>
@@ -582,17 +643,34 @@ export default function TelaNovaManutencao() {
               animationType="slide"
               onRequestClose={() => setModalAberto(false)}
             >
-              <SafeAreaView className="flex-1 bg-slate-950">
-                <View className="border-b border-slate-800 px-5 py-4">
+              <SafeAreaView
+                className="flex-1"
+                style={{ backgroundColor: cores.fundo }}
+              >
+                <View
+                  className="px-5 py-4"
+                  style={{
+                    borderBottomWidth: 1,
+                    borderBottomColor: cores.borda,
+                  }}
+                >
                   <View className="flex-row items-center justify-between">
                     <TouchableOpacity
                       onPress={() => setModalAberto(false)}
                       activeOpacity={0.8}
                     >
-                      <Text className="font-bold text-white">Voltar</Text>
+                      <Text
+                        className="font-bold"
+                        style={{ color: cores.texto }}
+                      >
+                        Voltar
+                      </Text>
                     </TouchableOpacity>
 
-                    <Text className="text-lg font-bold text-white">
+                    <Text
+                      className="text-lg font-bold"
+                      style={{ color: cores.texto }}
+                    >
                       Selecionar itens
                     </Text>
 
@@ -603,7 +681,12 @@ export default function TelaNovaManutencao() {
                       }}
                       activeOpacity={0.8}
                     >
-                      <Text className="font-bold text-white">Limpar</Text>
+                      <Text
+                        className="font-bold"
+                        style={{ color: cores.texto }}
+                      >
+                        Limpar
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -613,11 +696,20 @@ export default function TelaNovaManutencao() {
                     value={busca}
                     onChangeText={setBusca}
                     placeholder="Pesquisar (óleo, filtro, pastilha...)"
-                    placeholderTextColor="#94a3b8"
-                    className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-base text-white"
+                    placeholderTextColor={cores.textoSuave}
+                    className="rounded-2xl px-4 py-3 text-base"
+                    style={{
+                      borderWidth: 1,
+                      borderColor: cores.borda,
+                      backgroundColor: cores.fundoCard,
+                      color: cores.texto,
+                    }}
                   />
 
-                  <Text className="mt-3 text-sm text-slate-400">
+                  <Text
+                    className="mt-3 text-sm"
+                    style={{ color: cores.textoSuave }}
+                  >
                     Marcados: {selecionados.size}
                   </Text>
                 </View>
@@ -631,19 +723,34 @@ export default function TelaNovaManutencao() {
                         <TouchableOpacity
                           onPress={() => toggleSecao(secao.secao)}
                           activeOpacity={0.8}
-                          className={`flex-row items-center justify-between rounded-2xl border-2 px-4 py-3 ${
-                            aberta
-                              ? "border-cyan-500 bg-slate-950"
-                              : "border-slate-700 bg-slate-900"
-                          }`}
+                          className="flex-row items-center justify-between rounded-2xl border-2 px-4 py-3"
+                          style={{
+                            borderColor: aberta ? cores.primaria : cores.borda,
+                            backgroundColor: aberta
+                              ? cores.fundo
+                              : cores.fundoCard,
+                          }}
                         >
-                          <Text className="flex-1 font-bold text-white">
+                          <Text
+                            className="flex-1 font-bold"
+                            style={{ color: cores.texto }}
+                          >
                             {secao.secao}
                           </Text>
 
                           <View className="ml-3 flex-row items-center">
-                            <View className="mr-3 rounded-full border border-slate-700 bg-slate-900 px-3 py-1">
-                              <Text className="font-bold text-white">
+                            <View
+                              className="mr-3 rounded-full px-3 py-1"
+                              style={{
+                                borderWidth: 1,
+                                borderColor: cores.borda,
+                                backgroundColor: cores.fundoCard,
+                              }}
+                            >
+                              <Text
+                                className="font-bold"
+                                style={{ color: cores.texto }}
+                              >
                                 {
                                   secao.itens.filter((item) =>
                                     selecionados.has(item),
@@ -653,9 +760,10 @@ export default function TelaNovaManutencao() {
                             </View>
 
                             <Text
-                              className={`text-lg font-bold ${
-                                aberta ? "text-cyan-400" : "text-white"
-                              }`}
+                              className="text-lg font-bold"
+                              style={{
+                                color: aberta ? cores.primaria : cores.texto,
+                              }}
                             >
                               {aberta ? "▾" : "▸"}
                             </Text>
@@ -663,7 +771,13 @@ export default function TelaNovaManutencao() {
                         </TouchableOpacity>
 
                         {aberta ? (
-                          <View className="mt-2 overflow-hidden rounded-2xl border border-slate-700">
+                          <View
+                            className="mt-2 overflow-hidden rounded-2xl"
+                            style={{
+                              borderWidth: 1,
+                              borderColor: cores.borda,
+                            }}
+                          >
                             {secao.itens.map((item, indice) => {
                               const marcado = selecionados.has(item);
 
@@ -672,17 +786,30 @@ export default function TelaNovaManutencao() {
                                   key={item}
                                   onPress={() => toggleItem(item)}
                                   activeOpacity={0.8}
-                                  className={`flex-row items-center justify-between px-4 py-3 ${
-                                    marcado ? "bg-cyan-500" : "bg-slate-900"
-                                  } ${
-                                    indice > 0 ? "border-t border-slate-700" : ""
-                                  }`}
+                                  className="flex-row items-center justify-between px-4 py-3"
+                                  style={{
+                                    backgroundColor: marcado
+                                      ? cores.primaria
+                                      : cores.fundoCard,
+                                    borderTopWidth: indice > 0 ? 1 : 0,
+                                    borderTopColor: cores.borda,
+                                  }}
                                 >
-                                  <Text className="flex-1 font-semibold text-white">
+                                  <Text
+                                    className="flex-1 font-semibold"
+                                    style={{
+                                      color: marcado ? cores.fundo : cores.texto,
+                                    }}
+                                  >
                                     {item}
                                   </Text>
 
-                                  <Text className="ml-3 font-bold text-white">
+                                  <Text
+                                    className="ml-3 font-bold"
+                                    style={{
+                                      color: marcado ? cores.fundo : cores.texto,
+                                    }}
+                                  >
                                     {marcado ? "✓" : ""}
                                   </Text>
                                 </TouchableOpacity>
@@ -695,13 +822,24 @@ export default function TelaNovaManutencao() {
                   })}
                 </ScrollView>
 
-                <View className="absolute bottom-0 left-0 right-0 border-t border-slate-800 bg-slate-950 px-5 py-4">
+                <View
+                  className="absolute bottom-0 left-0 right-0 px-5 py-4"
+                  style={{
+                    borderTopWidth: 1,
+                    borderTopColor: cores.borda,
+                    backgroundColor: cores.fundo,
+                  }}
+                >
                   <TouchableOpacity
                     onPress={() => setModalAberto(false)}
                     activeOpacity={0.8}
-                    className="items-center rounded-2xl bg-cyan-500 px-4 py-3"
+                    className="items-center rounded-2xl px-4 py-3"
+                    style={{ backgroundColor: cores.primaria }}
                   >
-                    <Text className="text-base font-bold text-slate-950">
+                    <Text
+                      className="text-base font-bold"
+                      style={{ color: cores.fundo }}
+                    >
                       Concluir ({selecionados.size})
                     </Text>
                   </TouchableOpacity>
@@ -725,6 +863,18 @@ export default function TelaNovaManutencao() {
   );
 }
 
+type CoresTema = {
+  fundo: string;
+  fundoSecundario: string;
+  fundoCard: string;
+  borda: string;
+  texto: string;
+  textoSecundario: string;
+  textoSuave: string;
+  primaria: string;
+  perigo: string;
+};
+
 type CampoTextoProps = {
   titulo: string;
   valor: string;
@@ -733,6 +883,7 @@ type CampoTextoProps = {
   erro?: string;
   teclado?: "default" | "numeric";
   multiline?: boolean;
+  cores: CoresTema;
 };
 
 function CampoTexto({
@@ -743,17 +894,29 @@ function CampoTexto({
   erro,
   teclado = "default",
   multiline = false,
+  cores,
 }: CampoTextoProps) {
   return (
     <View>
-      <Text className="mb-2 text-sm font-medium text-slate-200">{titulo}</Text>
+      <Text
+        className="mb-2 text-sm font-medium"
+        style={{ color: cores.textoSecundario }}
+      >
+        {titulo}
+      </Text>
 
       <TextInput
-        className={`rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-base text-white ${
+        className={`rounded-2xl px-4 py-3 text-base ${
           multiline ? "min-h-28" : ""
         }`}
+        style={{
+          borderWidth: 1,
+          borderColor: cores.borda,
+          backgroundColor: cores.fundoCard,
+          color: cores.texto,
+        }}
         placeholder={placeholder}
-        placeholderTextColor="#94a3b8"
+        placeholderTextColor={cores.textoSuave}
         value={valor}
         onChangeText={aoAlterarTexto}
         keyboardType={teclado}
@@ -761,7 +924,11 @@ function CampoTexto({
         textAlignVertical={multiline ? "top" : "auto"}
       />
 
-      {erro ? <Text className="mt-2 text-sm text-red-400">{erro}</Text> : null}
+      {erro ? (
+        <Text className="mt-2 text-sm" style={{ color: cores.perigo }}>
+          {erro}
+        </Text>
+      ) : null}
     </View>
   );
 }

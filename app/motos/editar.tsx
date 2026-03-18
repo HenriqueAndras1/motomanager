@@ -16,6 +16,7 @@ import {
   obterMotoPorId,
 } from "../../src/servicos/motos-firebase";
 import AlertaApp from "../../src/componentes/AlertaApp";
+import { useTema } from "../../src/contextos/tema-contexto";
 
 type ParametrosRota = {
   id?: string;
@@ -31,6 +32,7 @@ type ErrosFormulario = {
 };
 
 export default function TelaEditarMoto() {
+  const { cores } = useTema();
   const { id } = useLocalSearchParams<ParametrosRota>();
 
   const [marca, setMarca] = useState("");
@@ -73,7 +75,7 @@ export default function TelaEditarMoto() {
       }
     }
 
-    carregar();
+    void carregar();
   }, [id]);
 
   function validarFormulario(): ErrosFormulario {
@@ -156,7 +158,7 @@ export default function TelaEditarMoto() {
 
       setAlertaSucessoAberto(true);
     } catch (erro) {
-      console.error("Erro ao atualizar moto:", erro);
+      console.error("Erro ao atualizar a moto:", erro);
       setAlertaErroAberto(true);
     } finally {
       setSalvando(false);
@@ -171,8 +173,13 @@ export default function TelaEditarMoto() {
   if (carregando) {
     return (
       <>
-        <SafeAreaView className="flex-1 items-center justify-center bg-slate-950">
-          <Text className="text-base text-slate-300">Carregando moto...</Text>
+        <SafeAreaView
+          className="flex-1 items-center justify-center"
+          style={{ backgroundColor: cores.fundo }}
+        >
+          <Text className="text-base" style={{ color: cores.textoSecundario }}>
+            Carregando moto...
+          </Text>
         </SafeAreaView>
 
         <AlertaApp
@@ -210,25 +217,32 @@ export default function TelaEditarMoto() {
 
   return (
     <>
-      <SafeAreaView className="flex-1 bg-slate-950">
+      <SafeAreaView className="flex-1" style={{ backgroundColor: cores.fundo }}>
         <ScrollView
           contentContainerClassName="px-5 pt-14 pb-6"
           keyboardShouldPersistTaps="handled"
         >
           <View className="mb-6 flex-row items-center justify-between">
             <TouchableOpacity
-              className="h-10 w-10 items-center justify-center rounded-full bg-slate-900"
+              className="h-10 w-10 items-center justify-center rounded-full"
+              style={{ backgroundColor: cores.fundoCard }}
               onPress={voltar}
               activeOpacity={0.8}
             >
-              <Ionicons name="arrow-back" size={22} color="#ffffff" />
+              <Ionicons name="arrow-back" size={22} color={cores.texto} />
             </TouchableOpacity>
 
             <View className="flex-1 px-4">
-              <Text className="text-center text-3xl font-bold text-white">
+              <Text
+                className="text-center text-3xl font-bold"
+                style={{ color: cores.texto }}
+              >
                 Editar moto
               </Text>
-              <Text className="mt-1 text-center text-base text-slate-300">
+              <Text
+                className="mt-1 text-center text-base"
+                style={{ color: cores.textoSecundario }}
+              >
                 Atualize os dados da moto
               </Text>
             </View>
@@ -243,6 +257,7 @@ export default function TelaEditarMoto() {
               aoAlterarTexto={setMarca}
               placeholder="Yamaha"
               erro={erros.marca}
+              cores={cores}
             />
 
             <CampoTexto
@@ -251,6 +266,7 @@ export default function TelaEditarMoto() {
               aoAlterarTexto={setModelo}
               placeholder="Fazer 250"
               erro={erros.modelo}
+              cores={cores}
             />
 
             <CampoTexto
@@ -260,6 +276,7 @@ export default function TelaEditarMoto() {
               placeholder="2026"
               teclado="numeric"
               erro={erros.ano}
+              cores={cores}
             />
 
             <CampoTexto
@@ -268,6 +285,7 @@ export default function TelaEditarMoto() {
               aoAlterarTexto={setCor}
               placeholder="Vermelho"
               erro={erros.cor}
+              cores={cores}
             />
 
             <CampoTexto
@@ -277,6 +295,7 @@ export default function TelaEditarMoto() {
               placeholder="120000"
               teclado="numeric"
               erro={erros.quilometragem}
+              cores={cores}
             />
 
             <CampoTexto
@@ -285,19 +304,31 @@ export default function TelaEditarMoto() {
               aoAlterarTexto={setPlaca}
               placeholder="ABC1D23"
               autoCapitalize="characters"
+              cores={cores}
             />
 
             <View>
-              <Text className="mb-2 text-sm font-medium text-slate-200">
+              <Text
+                className="mb-2 text-sm font-medium"
+                style={{ color: cores.textoSecundario }}
+              >
                 Foto
               </Text>
 
               <TouchableOpacity
-                className="items-center rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3"
+                className="items-center rounded-2xl px-4 py-3"
+                style={{
+                  borderWidth: 1,
+                  borderColor: cores.borda,
+                  backgroundColor: cores.fundoCard,
+                }}
                 onPress={selecionarFoto}
                 activeOpacity={0.8}
               >
-                <Text className="text-base font-semibold text-cyan-400">
+                <Text
+                  className="text-base font-semibold"
+                  style={{ color: cores.primaria }}
+                >
                   Selecionar foto da moto
                 </Text>
               </TouchableOpacity>
@@ -311,17 +342,23 @@ export default function TelaEditarMoto() {
               ) : null}
 
               {erros.fotoUri ? (
-                <Text className="mt-2 text-sm text-red-400">{erros.fotoUri}</Text>
+                <Text className="mt-2 text-sm" style={{ color: cores.perigo }}>
+                  {erros.fotoUri}
+                </Text>
               ) : null}
             </View>
 
             <TouchableOpacity
-              className="mt-2 items-center rounded-2xl bg-cyan-500 px-4 py-3"
+              className="mt-2 items-center rounded-2xl px-4 py-3"
+              style={{ backgroundColor: cores.primaria }}
               onPress={salvar}
               activeOpacity={0.8}
               disabled={salvando}
             >
-              <Text className="text-base font-bold text-slate-950">
+              <Text
+                className="text-base font-bold"
+                style={{ color: cores.fundo }}
+              >
                 {salvando ? "Salvando..." : "Salvar alterações"}
               </Text>
             </TouchableOpacity>
@@ -362,6 +399,18 @@ export default function TelaEditarMoto() {
   );
 }
 
+type CoresTema = {
+  fundo: string;
+  fundoSecundario: string;
+  fundoCard: string;
+  borda: string;
+  texto: string;
+  textoSecundario: string;
+  textoSuave: string;
+  primaria: string;
+  perigo: string;
+};
+
 type CampoTextoProps = {
   titulo: string;
   valor: string;
@@ -370,6 +419,7 @@ type CampoTextoProps = {
   erro?: string;
   teclado?: "default" | "numeric";
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
+  cores: CoresTema;
 };
 
 function CampoTexto({
@@ -380,22 +430,38 @@ function CampoTexto({
   erro,
   teclado = "default",
   autoCapitalize = "sentences",
+  cores,
 }: CampoTextoProps) {
   return (
     <View>
-      <Text className="mb-2 text-sm font-medium text-slate-200">{titulo}</Text>
+      <Text
+        className="mb-2 text-sm font-medium"
+        style={{ color: cores.textoSecundario }}
+      >
+        {titulo}
+      </Text>
 
       <TextInput
-        className="rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-base text-white"
+        className="rounded-2xl px-4 py-3 text-base"
+        style={{
+          borderWidth: 1,
+          borderColor: cores.borda,
+          backgroundColor: cores.fundoCard,
+          color: cores.texto,
+        }}
         placeholder={placeholder}
-        placeholderTextColor="#94a3b8"
+        placeholderTextColor={cores.textoSuave}
         value={valor}
         onChangeText={aoAlterarTexto}
         keyboardType={teclado}
         autoCapitalize={autoCapitalize}
       />
 
-      {erro ? <Text className="mt-2 text-sm text-red-400">{erro}</Text> : null}
+      {erro ? (
+        <Text className="mt-2 text-sm" style={{ color: cores.perigo }}>
+          {erro}
+        </Text>
+      ) : null}
     </View>
   );
 }

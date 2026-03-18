@@ -9,17 +9,16 @@ import {
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  buscarMotoSelecionadaId,
-} from "../../src/servicos/moto-selecionada-firebase";
-import {
-  buscarAlertasPorMotoId,
-} from "../../src/servicos/alertas-firebase";
+import { buscarMotoSelecionadaId } from "../../src/servicos/moto-selecionada-firebase";
+import { buscarAlertasPorMotoId } from "../../src/servicos/alertas-firebase";
 import { obterMotoPorId } from "../../src/servicos/motos-firebase";
+import { useTema } from "../../src/contextos/tema-contexto";
 import { Alerta } from "../../src/tipos/alerta";
 import { Moto } from "../../src/tipos/moto";
 
 export default function TelaAlertas() {
+  const { cores } = useTema();
+
   const [carregando, setCarregando] = useState(true);
   const [motoSelecionada, setMotoSelecionada] = useState<Moto | null>(null);
   const [alertas, setAlertas] = useState<Alerta[]>([]);
@@ -55,7 +54,7 @@ export default function TelaAlertas() {
         }
       }
 
-      carregarDados();
+      void carregarDados();
     }, []),
   );
 
@@ -79,9 +78,15 @@ export default function TelaAlertas() {
 
   if (carregando) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-slate-950">
-        <ActivityIndicator size="large" color="#ffffff" />
-        <Text className="mt-4 text-base text-slate-300">
+      <SafeAreaView
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: cores.fundo }}
+      >
+        <ActivityIndicator size="large" color={cores.primaria} />
+        <Text
+          className="mt-4 text-base"
+          style={{ color: cores.textoSecundario }}
+        >
           Carregando alertas...
         </Text>
       </SafeAreaView>
@@ -90,31 +95,41 @@ export default function TelaAlertas() {
 
   if (!motoSelecionada) {
     return (
-      <SafeAreaView className="flex-1 bg-slate-950">
+      <SafeAreaView className="flex-1" style={{ backgroundColor: cores.fundo }}>
         <View className="flex-1 px-5 pt-14 pb-6">
           <View className="mb-6 flex-row items-start justify-between">
             <View className="h-8 w-8" />
 
             <View className="flex-1 px-4">
-              <Text className="text-center text-3xl font-bold text-white">
+              <Text
+                className="text-center text-3xl font-bold"
+                style={{ color: cores.texto }}
+              >
                 Alertas
               </Text>
-              <Text className="mt-1 text-center text-base text-slate-300">
+              <Text
+                className="mt-1 text-center text-base"
+                style={{ color: cores.textoSecundario }}
+              >
                 Configure alertas por moto
               </Text>
             </View>
 
             <TouchableOpacity
-              className="h-8 w-8 items-center justify-center rounded-full bg-cyan-500"
+              className="h-8 w-8 items-center justify-center rounded-full"
+              style={{ backgroundColor: cores.primaria }}
               onPress={irParaNovoAlerta}
               activeOpacity={0.8}
             >
-              <Ionicons name="add" size={18} color="#020617" />
+              <Ionicons name="add" size={18} color={cores.fundo} />
             </TouchableOpacity>
           </View>
 
           <View className="flex-1 items-center justify-center px-6">
-            <Text className="text-center text-base text-slate-300">
+            <Text
+              className="text-center text-base"
+              style={{ color: cores.textoSecundario }}
+            >
               Nenhuma moto selecionada.
             </Text>
           </View>
@@ -124,26 +139,33 @@ export default function TelaAlertas() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-950">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: cores.fundo }}>
       <ScrollView contentContainerClassName="px-5 pt-14 pb-6">
         <View className="mb-6 flex-row items-start justify-between">
           <View className="h-8 w-8" />
 
           <View className="flex-1 px-4">
-            <Text className="text-center text-3xl font-bold text-white">
+            <Text
+              className="text-center text-3xl font-bold"
+              style={{ color: cores.texto }}
+            >
               Alertas
             </Text>
-            <Text className="mt-1 text-center text-base text-slate-300">
+            <Text
+              className="mt-1 text-center text-base"
+              style={{ color: cores.textoSecundario }}
+            >
               {motoSelecionada.marca} {motoSelecionada.modelo}
             </Text>
           </View>
 
           <TouchableOpacity
-            className="h-8 w-8 items-center justify-center rounded-full bg-cyan-500"
+            className="h-8 w-8 items-center justify-center rounded-full"
+            style={{ backgroundColor: cores.primaria }}
             onPress={irParaNovoAlerta}
             activeOpacity={0.8}
           >
-            <Ionicons name="add" size={18} color="#020617" />
+            <Ionicons name="add" size={18} color={cores.fundo} />
           </TouchableOpacity>
         </View>
 
@@ -152,6 +174,7 @@ export default function TelaAlertas() {
           vazio="Nenhum alerta ativo."
           alertas={alertasAtivos}
           aoPressionarAlerta={irParaDetalhesAlerta}
+          cores={cores}
         />
 
         <View className="mt-6" />
@@ -161,17 +184,31 @@ export default function TelaAlertas() {
           vazio="Nenhum alerta concluído ou inativo."
           alertas={historicoAlertas}
           aoPressionarAlerta={irParaDetalhesAlerta}
+          cores={cores}
         />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+type CoresTema = {
+  fundo: string;
+  fundoSecundario: string;
+  fundoCard: string;
+  borda: string;
+  texto: string;
+  textoSecundario: string;
+  textoSuave: string;
+  primaria: string;
+  perigo: string;
+};
+
 type SecaoAlertasProps = {
   titulo: string;
   vazio: string;
   alertas: Alerta[];
   aoPressionarAlerta: (id: string) => void;
+  cores: CoresTema;
 };
 
 function SecaoAlertas({
@@ -179,53 +216,80 @@ function SecaoAlertas({
   vazio,
   alertas,
   aoPressionarAlerta,
+  cores,
 }: SecaoAlertasProps) {
   return (
-    <View className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
-      <Text className="text-lg font-bold text-white">{titulo}</Text>
+    <View
+      className="rounded-2xl p-5"
+      style={{
+        borderWidth: 1,
+        borderColor: cores.borda,
+        backgroundColor: cores.fundoCard,
+      }}
+    >
+      <Text className="text-lg font-bold" style={{ color: cores.texto }}>
+        {titulo}
+      </Text>
 
       {alertas.length === 0 ? (
-        <Text className="mt-3 text-base text-slate-300">{vazio}</Text>
+        <Text className="mt-3 text-base" style={{ color: cores.textoSecundario }}>
+          {vazio}
+        </Text>
       ) : (
         <View className="mt-4 gap-3">
-          {alertas.map((alerta) => (
-            <TouchableOpacity
-              key={alerta.id}
-              className="rounded-2xl border border-slate-800 bg-slate-950 px-4 py-4"
-              onPress={() => aoPressionarAlerta(alerta.id)}
-              activeOpacity={0.8}
-            >
-              <View className="flex-row items-start justify-between">
-                <View className="flex-1 pr-3">
-                  <Text className="text-base font-bold text-white">
-                    {alerta.titulo}
-                  </Text>
+          {alertas.map((alerta) => {
+            const estaAtivo = alerta.ativo && !alerta.concluido;
 
-                  <Text className="mt-1 text-sm text-slate-400">
-                    {formatarDescricaoAlerta(alerta)}
-                  </Text>
-                </View>
+            return (
+              <TouchableOpacity
+                key={alerta.id}
+                className="rounded-2xl px-4 py-4"
+                style={{
+                  borderWidth: 1,
+                  borderColor: cores.borda,
+                  backgroundColor: cores.fundo,
+                }}
+                onPress={() => aoPressionarAlerta(alerta.id)}
+                activeOpacity={0.8}
+              >
+                <View className="flex-row items-start justify-between">
+                  <View className="flex-1 pr-3">
+                    <Text
+                      className="text-base font-bold"
+                      style={{ color: cores.texto }}
+                    >
+                      {alerta.titulo}
+                    </Text>
 
-                <View
-                  className={`rounded-full px-3 py-1 ${
-                    alerta.ativo && !alerta.concluido
-                      ? "bg-cyan-500/15"
-                      : "bg-slate-800"
-                  }`}
-                >
-                  <Text
-                    className={`text-xs font-bold ${
-                      alerta.ativo && !alerta.concluido
-                        ? "text-cyan-400"
-                        : "text-slate-300"
-                    }`}
+                    <Text
+                      className="mt-1 text-sm"
+                      style={{ color: cores.textoSuave }}
+                    >
+                      {formatarDescricaoAlerta(alerta)}
+                    </Text>
+                  </View>
+
+                  <View
+                    className="rounded-full px-3 py-1"
+                    style={{
+                      backgroundColor: estaAtivo
+                        ? `${cores.primaria}26`
+                        : cores.borda,
+                    }}
                   >
-                    {alerta.ativo && !alerta.concluido ? "ATIVO" : "HISTÓRICO"}
-                  </Text>
+                    <Text
+                      className="text-xs font-bold"
+                      style={{
+                        color: estaAtivo ? cores.primaria : cores.textoSecundario,
+                      }}
+                    >
+                      {estaAtivo ? "ATIVO" : "HISTÓRICO"}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            );
+          })}
         </View>
       )}
     </View>
