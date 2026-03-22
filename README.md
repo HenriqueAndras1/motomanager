@@ -1,50 +1,196 @@
-# Welcome to your Expo app 👋
+# 🏍️ Moto Manager
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicativo para gerenciamento de manutenções de moto, controle de alertas e organização geral.
 
-## Get started
+---
 
-1. Install dependencies
+## 🚀 Tecnologias
 
-   ```bash
-   npm install
-   ```
+* React Native (Expo)
+* Expo Router
+* TypeScript
+* React Native Paper
+* Expo Updates (OTA)
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## 📱 Funcionalidades
 
-In the output, you'll find options to open the app in a
+* Cadastro de moto
+* Controle de manutenções
+* Sistema de alertas
+* Tema claro/escuro automático
+* Atualização automática (OTA)
+* Atualização obrigatória com bloqueio de versão
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## ⚙️ Configuração do Projeto
 
-## Get a fresh project
-
-When you're ready, run:
+### 📥 Instalar dependências
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+### ▶️ Rodar projeto (desenvolvimento)
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npx expo start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+---
 
-## Join the community
+### 🌐 Rodar no navegador (web)
 
-Join our community of developers creating universal apps.
+```bash
+npx expo start --web
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---
+
+## 📦 Build do App
+
+### 🔧 Login no Expo (caso necessário)
+
+```bash
+npx expo login
+```
+
+---
+
+### 📱 Gerar APK (instalar no celular)
+
+```bash
+npx eas build -p android --profile preview
+```
+
+---
+
+### 🏗️ Gerar versão de produção (AAB)
+
+```bash
+npx eas build -p android --profile production
+```
+
+---
+
+## 🔄 Atualização do App (OTA)
+
+O app utiliza **Expo Updates**, permitindo atualizar o app sem reinstalar.
+
+---
+
+### 🚀 Enviar atualização
+
+```bash
+npx eas update
+```
+
+---
+
+### 📡 Selecionar canal
+
+* `preview` → testes internos
+* `production` → versão final
+
+---
+
+### 📱 Como funciona a atualização
+
+1. Você altera o código
+2. Executa:
+
+```bash
+npx eas update
+```
+
+3. O app no celular:
+
+   * detecta atualização
+   * baixa automaticamente
+   * exibe modal de atualização
+   * exige atualização (modo obrigatório)
+   * reinicia com nova versão
+
+---
+
+## 🧠 Fluxo de Atualização
+
+* Verificação automática ao abrir o app
+* Download em background
+* Exibição de modal
+* Bloqueio até atualizar
+* Reinício automático
+
+---
+
+## 📂 Estrutura do Projeto
+
+```
+app/
+ ├── (abas)/
+ ├── _layout.tsx
+
+src/
+ ├── contextos/
+ ├── utils/
+```
+
+---
+
+## 🎨 Tema
+
+* Suporte a modo claro e escuro
+* Cores personalizadas
+* Layout consistente
+
+---
+
+## 🔒 Atualização Obrigatória
+
+O app possui sistema de:
+
+* Verificação automática de atualização
+* Bloqueio de uso em versões antigas
+* Modal profissional
+* Sem opção de ignorar atualização
+
+---
+
+## 👨‍💻 Autor
+
+**Henrique Andras**
+
+---
+
+## 🚀 Status
+
+🟢 Em desenvolvimento / uso pessoal
+
+---
+
+## 💡 Futuras melhorias
+
+* Histórico detalhado de manutenções
+* Backup em nuvem
+* Notificações inteligentes
+* Melhorias de UX
+* Integração com API
+
+---
+
+## ⚡ Dicas importantes
+
+* Sempre testar antes de rodar:
+
+```bash
+npx eas update
+```
+
+* OTA NÃO altera código nativo
+* Para mudanças grandes, gere novo APK
+
+---

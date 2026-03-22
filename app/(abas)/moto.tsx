@@ -429,7 +429,7 @@ export default function TelaMoto() {
                 className="text-lg font-bold"
                 style={{ color: cores.texto }}
               >
-                Resumo da moto
+                Resumo da Moto
               </Text>
 
               <View className="mt-5 flex-row gap-6">
@@ -475,7 +475,7 @@ export default function TelaMoto() {
                 className="text-lg font-bold"
                 style={{ color: cores.texto }}
               >
-                Última manutenção
+                Última Manutenção
               </Text>
 
               {ultimaManutencao ? (

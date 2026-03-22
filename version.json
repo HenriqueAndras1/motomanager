@@ -1,4 +1,5 @@
 {
-  "version": "1.0.1",
+  "minVersion": "1.0.1",
+  "forceUpdate": true,
   "url": "https://github.com/HenriqueAndras1/motomanager/releases/latest/download/app.apk"
 }

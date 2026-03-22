@@ -56,7 +56,6 @@ export default function LayoutAbas() {
         }}
       />
 
-      {/* 🔥 CORREÇÃO AQUI */}
       <Tabs.Screen
         name="configuracoes"
         options={{
@@ -67,7 +66,7 @@ export default function LayoutAbas() {
         }}
         listeners={{
           tabPress: () => {
-            router.replace("/configuracoes"); // 🔥 sempre volta pro index
+            router.replace("/configuracoes");
           },
         }}
       />

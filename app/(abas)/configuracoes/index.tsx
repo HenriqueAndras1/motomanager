@@ -78,7 +78,6 @@ export default function Configuracoes() {
         >
           <Item icone="color-palette" titulo="Aparência" rota="/configuracoes/aparencia" />
           <Item icone="notifications" titulo="Notificações" rota="/configuracoes/notificacoes" />
-          <Item icone="cloud-download" titulo="Atualização" rota="/configuracoes/atualizacao" />
           <Item icone="information-circle" titulo="Sobre o app" rota="/configuracoes/sobre" />
         </View>
 

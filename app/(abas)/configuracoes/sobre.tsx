@@ -9,8 +9,18 @@ import { useTema } from "../../../src/contextos/tema-contexto";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
+// 🔥 NOVOS IMPORTS
+import * as Application from "expo-application";
+import * as Updates from "expo-updates";
+
 export default function TelaSobre() {
   const { cores } = useTema();
+
+  // 🔥 VERSÃO REAL DO APP
+  const versao = Application.nativeApplicationVersion || "1.0.0";
+
+  // 🔥 ID DA ATUALIZAÇÃO OTA
+  const updateId = Updates.updateId?.slice(0, 8) || "original";
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: cores.fundo }}>
@@ -68,6 +78,7 @@ export default function TelaSobre() {
             Moto Manager
           </Text>
 
+          {/* 🔥 VERSÃO DINÂMICA */}
           <Text
             style={{
               marginTop: 8,
@@ -75,7 +86,18 @@ export default function TelaSobre() {
               color: cores.textoSuave,
             }}
           >
-            Versão 1.0.0
+            Versão {versao}
+          </Text>
+
+          {/* 🔥 OTA VISÍVEL */}
+          <Text
+            style={{
+              marginTop: 4,
+              fontSize: 12,
+              color: cores.textoSecundario,
+            }}
+          >
+            Atualização {updateId}
           </Text>
 
           <Text
