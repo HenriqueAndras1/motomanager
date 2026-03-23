@@ -31,6 +31,20 @@ type ErrosFormulario = {
   geral?: string;
 };
 
+type CoresTema = {
+  fundo: string;
+  fundoSecundario: string;
+  fundoCard: string;
+  borda: string;
+  texto: string;
+  textoSecundario: string;
+  textoSuave: string;
+  primaria: string;
+  perigo: string;
+};
+
+const PASSO_KM = 100;
+
 function isoParaBR(iso: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
     return "";
@@ -65,7 +79,10 @@ function brParaISO(br: string): string | null {
     return null;
   }
 
-  return `${String(ano)}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+  return `${String(ano)}-${String(mes).padStart(2, "0")}-${String(dia).padStart(
+    2,
+    "0",
+  )}`;
 }
 
 function mascaraDataBR(valor: string): string {
@@ -82,8 +99,18 @@ function mascaraDataBR(valor: string): string {
   return `${digitos.slice(0, 2)}/${digitos.slice(2, 4)}/${digitos.slice(4)}`;
 }
 
-function mascaraNumero(valor: string): string {
+function somenteDigitos(valor: string): string {
   return valor.replace(/\D/g, "");
+}
+
+function formatarComPontos(valor: string): string {
+  const digitos = somenteDigitos(valor);
+
+  if (!digitos) {
+    return "";
+  }
+
+  return Number(digitos).toLocaleString("pt-BR");
 }
 
 function calcularKmPorDia(
@@ -122,7 +149,9 @@ function calcularDataPrevistaTexto(
   const data = new Date();
   data.setDate(data.getDate() + dias);
 
-  return `Faltam ${faltante.toLocaleString("pt-BR")} km • previsão aproximada em ${data.toLocaleDateString("pt-BR")}`;
+  return `Faltam ${faltante.toLocaleString(
+    "pt-BR",
+  )} km • previsão aproximada em ${data.toLocaleDateString("pt-BR")}`;
 }
 
 export default function TelaEditarAlerta() {
@@ -226,6 +255,18 @@ export default function TelaEditarAlerta() {
     };
   }, [id]);
 
+  useEffect(() => {
+    if (motoSelecionada && tipo === "manutencao_km" && !quilometragemObjetivo) {
+      setQuilometragemObjetivo(String(motoSelecionada.quilometragem));
+    }
+  }, [motoSelecionada, tipo, quilometragemObjetivo]);
+
+  const larguraInputKmAlvo = useMemo(() => {
+    const textoFormatado = formatarComPontos(quilometragemObjetivo || "0");
+    const larguraCalculada = textoFormatado.length * 8;
+    return Math.min(Math.max(larguraCalculada, 24), 110);
+  }, [quilometragemObjetivo]);
+
   const previewManutencao = useMemo(() => {
     const kmObjetivo = Number(quilometragemObjetivo);
     const usoValor = Number(usoMedioValor);
@@ -253,6 +294,19 @@ export default function TelaEditarAlerta() {
     router.back();
   }
 
+  function ajustarQuilometragemObjetivo(incremento: number): void {
+    const atual = Number(quilometragemObjetivo);
+    const base = Number.isFinite(atual) ? atual : 0;
+    const proximo = Math.max(0, base + incremento);
+
+    setQuilometragemObjetivo(String(proximo));
+    setErros((estadoAnterior) => ({
+      ...estadoAnterior,
+      quilometragemObjetivo: undefined,
+      geral: undefined,
+    }));
+  }
+
   async function salvar(): Promise<void> {
     const novosErros: ErrosFormulario = {};
 
@@ -278,7 +332,7 @@ export default function TelaEditarAlerta() {
         kmObjetivoNumero <= kmAtualMoto
       ) {
         novosErros.quilometragemObjetivo =
-          "A quilometragem alvo precisa ser maior que a quilometragem atual da moto.";
+          "A quilometragem alvo precisa ser maior que o valor atual de referência.";
       }
 
       if (!usoMedioValor.trim()) {
@@ -433,77 +487,133 @@ export default function TelaEditarAlerta() {
 
           {tipo === "manutencao_km" ? (
             <>
-              <View
-                className="rounded-2xl px-4 py-4"
-                style={{
-                  borderWidth: 1,
-                  borderColor: cores.borda,
-                  backgroundColor: cores.fundoCard,
-                }}
-              >
-                <Text
-                  className="text-sm font-medium"
-                  style={{ color: cores.textoSuave }}
-                >
-                  Quilometragem atual da moto
-                </Text>
-                <Text
-                  className="mt-1 text-base font-bold"
-                  style={{ color: cores.texto }}
-                >
-                  {motoSelecionada
-                    ? `${motoSelecionada.quilometragem.toLocaleString("pt-BR")} km`
-                    : "Carregando..."}
-                </Text>
-
-                <Text
-                  className="mt-3 text-sm font-medium"
-                  style={{ color: cores.textoSuave }}
-                >
-                  A meta precisa ser maior que a quilometragem atual.
-                </Text>
-              </View>
-
-              <CampoTexto
-                titulo="Quilometragem alvo"
-                valor={quilometragemObjetivo}
-                aoAlterarTexto={(texto) => {
-                  setQuilometragemObjetivo(mascaraNumero(texto));
-                  setErros((estadoAnterior) => ({
-                    ...estadoAnterior,
-                    quilometragemObjetivo: undefined,
-                    geral: undefined,
-                  }));
-                }}
-                placeholder="Ex: 18000"
-                teclado="numeric"
-                erro={erros.quilometragemObjetivo}
-                cores={cores}
-              />
-
-              {motoSelecionada && quilometragemObjetivo ? (
-                <View
-                  className="rounded-2xl px-4 py-4"
-                  style={{
-                    borderWidth: 1,
-                    borderColor: cores.borda,
-                    backgroundColor: cores.fundoCard,
-                  }}
-                >
+              <View className="flex-row gap-3">
+                <View className="flex-1">
                   <Text
-                    className="text-sm font-medium"
-                    style={{ color: cores.textoSuave }}
+                    className="mb-2 text-sm font-medium"
+                    style={{ color: cores.textoSecundario }}
                   >
-                    Comparativo
+                    Quilometragem atual
                   </Text>
-                  <Text className="mt-1 text-base" style={{ color: cores.texto }}>
-                    Atual: {motoSelecionada.quilometragem.toLocaleString("pt-BR")} km
-                  </Text>
-                  <Text className="mt-1 text-base" style={{ color: cores.texto }}>
-                    Alvo: {Number(quilometragemObjetivo).toLocaleString("pt-BR")} km
-                  </Text>
+
+                  <View
+                    className="h-12 rounded-2xl flex-row items-center px-4"
+                    style={{
+                      borderWidth: 1,
+                      borderColor: cores.borda,
+                      backgroundColor: cores.fundoSecundario,
+                    }}
+                  >
+                    <Text className="text-base" style={{ color: cores.texto }}>
+                      {motoSelecionada
+                        ? motoSelecionada.quilometragem.toLocaleString("pt-BR")
+                        : "Carregando..."}
+                    </Text>
+                    <Text
+                      className="ml-1 text-sm font-bold"
+                      style={{ color: cores.textoSecundario }}
+                    >
+                      KM
+                    </Text>
+                  </View>
                 </View>
-              ) : null}
+
+                <View className="flex-1">
+                  <Text
+                    className="mb-2 text-sm font-medium"
+                    style={{ color: cores.textoSecundario }}
+                  >
+                    Quilometragem alvo
+                  </Text>
+
+                  <View
+                    className="h-12 rounded-2xl flex-row items-center"
+                    style={{
+                      borderWidth: 1,
+                      borderColor: cores.borda,
+                      backgroundColor: cores.fundoCard,
+                    }}
+                  >
+                    <View className="flex-row items-center pl-4">
+                      <TextInput
+                        className="py-0 text-base"
+                        style={{
+                          color: cores.texto,
+                          width: larguraInputKmAlvo,
+                        }}
+                        placeholder="18000"
+                        placeholderTextColor={cores.textoSuave}
+                        value={formatarComPontos(quilometragemObjetivo)}
+                        onChangeText={(texto) => {
+                          setQuilometragemObjetivo(somenteDigitos(texto));
+                          setErros((estadoAnterior) => ({
+                            ...estadoAnterior,
+                            quilometragemObjetivo: undefined,
+                            geral: undefined,
+                          }));
+                        }}
+                        keyboardType="numeric"
+                      />
+                      <Text
+                        className="ml-1 text-sm font-bold"
+                        style={{ color: cores.textoSecundario }}
+                      >
+                        KM
+                      </Text>
+                    </View>
+
+                    <View className="flex-1" />
+
+                    <View className="mr-2">
+                      <View
+                        className="overflow-hidden rounded-lg"
+                        style={{ borderWidth: 1, borderColor: cores.borda }}
+                      >
+                        <TouchableOpacity
+                          className="px-2 py-0.5"
+                          onPress={() =>
+                            ajustarQuilometragemObjetivo(PASSO_KM)
+                          }
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons
+                            name="chevron-up"
+                            size={15}
+                            color={cores.textoSecundario}
+                          />
+                        </TouchableOpacity>
+
+                        <View
+                          style={{
+                            height: 1,
+                            backgroundColor: cores.borda,
+                          }}
+                        />
+
+                        <TouchableOpacity
+                          className="px-2 py-0.5"
+                          onPress={() =>
+                            ajustarQuilometragemObjetivo(-PASSO_KM)
+                          }
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons
+                            name="chevron-down"
+                            size={15}
+                            color={cores.textoSecundario}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+
+                  {erros.quilometragemObjetivo ? (
+                    <Text className="mt-2 text-sm" style={{ color: cores.perigo }}>
+                      {erros.quilometragemObjetivo}
+                    </Text>
+                  ) : null}
+                </View>
+              </View>
 
               <View>
                 <Text
@@ -525,9 +635,9 @@ export default function TelaEditarAlerta() {
                       }}
                       placeholder="Ex: 100"
                       placeholderTextColor={cores.textoSuave}
-                      value={usoMedioValor}
+                      value={formatarComPontos(usoMedioValor)}
                       onChangeText={(texto) => {
-                        setUsoMedioValor(mascaraNumero(texto));
+                        setUsoMedioValor(somenteDigitos(texto));
                         setErros((estadoAnterior) => ({
                           ...estadoAnterior,
                           usoMedioValor: undefined,
@@ -559,8 +669,8 @@ export default function TelaEditarAlerta() {
                   className="rounded-2xl px-4 py-4"
                   style={{
                     borderWidth: 1,
-                    borderColor: `${cores.primaria}4D`,
-                    backgroundColor: `${cores.primaria}1A`,
+                    borderColor: `${cores.primaria}55`,
+                    backgroundColor: `${cores.primaria}12`,
                   }}
                 >
                   <Text
@@ -610,34 +720,38 @@ export default function TelaEditarAlerta() {
           />
 
           <View
-            className="flex-row items-center justify-between rounded-2xl px-4 py-4"
+            className="flex-row items-center rounded-2xl px-4 py-4"
             style={{
               borderWidth: 1,
               borderColor: cores.borda,
               backgroundColor: cores.fundoCard,
             }}
           >
-            <View className="pr-4">
+            <View className="flex-1 pr-3">
               <Text
                 className="text-base font-bold"
                 style={{ color: cores.texto }}
+                numberOfLines={1}
               >
                 Alerta ativo
               </Text>
               <Text
                 className="mt-1 text-sm"
                 style={{ color: cores.textoSuave }}
+                numberOfLines={2}
               >
                 Você pode desativar e manter no histórico depois
               </Text>
             </View>
 
-            <Switch
-              value={ativo}
-              onValueChange={setAtivo}
-              trackColor={{ false: cores.borda, true: cores.primaria }}
-              thumbColor="#ffffff"
-            />
+            <View>
+              <Switch
+                value={ativo}
+                onValueChange={setAtivo}
+                trackColor={{ false: cores.borda, true: cores.primaria }}
+                thumbColor={cores.fundo}
+              />
+            </View>
           </View>
 
           {erros.geral ? (
@@ -653,10 +767,7 @@ export default function TelaEditarAlerta() {
             activeOpacity={0.8}
             disabled={salvando}
           >
-            <Text
-              className="text-base font-bold"
-              style={{ color: cores.fundo }}
-            >
+            <Text className="text-base font-bold" style={{ color: cores.fundo }}>
               {salvando ? "Salvando..." : "Salvar alerta"}
             </Text>
           </TouchableOpacity>
@@ -666,18 +777,6 @@ export default function TelaEditarAlerta() {
   );
 }
 
-type CoresTema = {
-  fundo: string;
-  fundoSecundario: string;
-  fundoCard: string;
-  borda: string;
-  texto: string;
-  textoSecundario: string;
-  textoSuave: string;
-  primaria: string;
-  perigo: string;
-};
-
 type CampoTextoProps = {
   titulo: string;
   valor: string;
@@ -686,6 +785,7 @@ type CampoTextoProps = {
   erro?: string;
   teclado?: "default" | "numeric";
   multiline?: boolean;
+  editavel?: boolean;
   cores: CoresTema;
 };
 
@@ -697,6 +797,7 @@ function CampoTexto({
   erro,
   teclado = "default",
   multiline = false,
+  editavel = true,
   cores,
 }: CampoTextoProps) {
   return (
@@ -715,7 +816,7 @@ function CampoTexto({
         style={{
           borderWidth: 1,
           borderColor: cores.borda,
-          backgroundColor: cores.fundoCard,
+          backgroundColor: editavel ? cores.fundoCard : cores.fundoSecundario,
           color: cores.texto,
         }}
         placeholder={placeholder}
@@ -725,6 +826,7 @@ function CampoTexto({
         keyboardType={teclado}
         multiline={multiline}
         textAlignVertical={multiline ? "top" : "auto"}
+        editable={editavel}
       />
 
       {erro ? (
@@ -751,10 +853,11 @@ function BotaoTipo({
 }: BotaoTipoProps) {
   return (
     <TouchableOpacity
-      className="flex-1 rounded-2xl border px-4 py-3"
+      className="flex-1 rounded-2xl px-4 py-3"
       style={{
+        borderWidth: 1,
         borderColor: selecionado ? cores.primaria : cores.borda,
-        backgroundColor: selecionado ? `${cores.primaria}1A` : cores.fundoCard,
+        backgroundColor: selecionado ? `${cores.primaria}12` : cores.fundoCard,
       }}
       onPress={onPress}
       activeOpacity={0.8}

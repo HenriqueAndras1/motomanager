@@ -21,6 +21,11 @@ function AppComTema() {
   const [updateDisponivel, setUpdateDisponivel] = useState(false);
   const [obrigatorio, setObrigatorio] = useState(false);
 
+  // 🔥 NOVOS (loading OTA)
+  const [atualizando, setAtualizando] = useState(false);
+  const [progresso, setProgresso] = useState(0);
+  const [mensagem, setMensagem] = useState("");
+
   // 🔥 BLOQUEIO POR VERSÃO
   const [bloqueado, setBloqueado] = useState(false);
 
@@ -29,6 +34,9 @@ function AppComTema() {
     verificarAtualizacaoOTA({
       setUpdateDisponivel,
       setObrigatorio,
+      setAtualizando,
+      setProgresso,
+      setMensagem,
     });
 
     verificarVersaoApp(setBloqueado);
@@ -63,12 +71,67 @@ function AppComTema() {
           },
         };
 
+  // 🔥 TELA DE LOADING OTA
+  if (atualizando) {
+    return (
+      <PaperProvider theme={temaPaper}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 20,
+            backgroundColor: temaPaper.colors.background,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 16,
+              marginBottom: 20,
+              color: temaPaper.colors.onSurface,
+            }}
+          >
+            {mensagem}
+          </Text>
+
+          {/* 🔥 BARRA */}
+          <View
+            style={{
+              width: "100%",
+              height: 10,
+              backgroundColor: "#e5e7eb",
+              borderRadius: 5,
+              overflow: "hidden",
+            }}
+          >
+            <View
+              style={{
+                width: `${progresso}%`,
+                height: "100%",
+                backgroundColor: temaPaper.colors.primary,
+              }}
+            />
+          </View>
+
+          <Text
+            style={{
+              marginTop: 10,
+              color: temaPaper.colors.onSurface,
+            }}
+          >
+            {progresso}%
+          </Text>
+        </View>
+      </PaperProvider>
+    );
+  }
+
   return (
     <PaperProvider theme={temaPaper}>
       <>
         <Stack screenOptions={{ headerShown: false }} />
 
-        {/* 🔥 MODAL OTA (OBRIGATÓRIO) */}
+        {/* 🔥 MODAL OTA (fallback/manual) */}
         <Modal
           visible={updateDisponivel}
           transparent

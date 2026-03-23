@@ -9,18 +9,28 @@ import { useTema } from "../../../src/contextos/tema-contexto";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
-// 🔥 NOVOS IMPORTS
 import * as Application from "expo-application";
 import * as Updates from "expo-updates";
 
 export default function TelaSobre() {
   const { cores } = useTema();
 
-  // 🔥 VERSÃO REAL DO APP
+  // 🔥 versão do app
   const versao = Application.nativeApplicationVersion || "1.0.0";
 
-  // 🔥 ID DA ATUALIZAÇÃO OTA
-  const updateId = Updates.updateId?.slice(0, 8) || "original";
+  const build = Application.nativeBuildVersion || "1";
+
+  const otaVersao = Updates.createdAt
+    ? new Date(Updates.createdAt).getTime().toString().slice(-4)
+    : null;
+
+  const versaoFinal = otaVersao
+    ? `v${versao} (${build}.${otaVersao})`
+    : `v${versao} (${build})`;
+
+  const dataAtualizacao = Updates.createdAt
+    ? new Date(Updates.createdAt).toLocaleDateString("pt-BR")
+    : new Date().toLocaleDateString("pt-BR");
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: cores.fundo }}>
@@ -31,19 +41,28 @@ export default function TelaSobre() {
           paddingBottom: 24,
         }}
       >
-        {/* HEADER */}
+        {/* 🔥 HEADER PADRÃO */}
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "center",
+            justifyContent: "space-between",
+            marginBottom: 24,
           }}
         >
           <TouchableOpacity
-            onPress={() => router.replace("/configuracoes")}
-            style={{ position: "absolute", left: 0, padding: 8 }}
+            style={{
+              height: 40,
+              width: 40,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 999,
+              backgroundColor: cores.fundoCard,
+            }}
+            onPress={() => router.back()}
+            activeOpacity={0.8}
           >
-            <Ionicons name="chevron-back" size={24} color={cores.texto} />
+            <Ionicons name="arrow-back" size={22} color={cores.texto} />
           </TouchableOpacity>
 
           <Text
@@ -55,12 +74,15 @@ export default function TelaSobre() {
           >
             Sobre
           </Text>
+
+          {/* 🔥 espaço pra centralizar */}
+          <View style={{ height: 40, width: 40 }} />
         </View>
 
         {/* CARD */}
         <View
           style={{
-            marginTop: 32,
+            marginTop: 8,
             borderRadius: 16,
             borderWidth: 1,
             borderColor: cores.borda,
@@ -78,7 +100,6 @@ export default function TelaSobre() {
             Moto Manager
           </Text>
 
-          {/* 🔥 VERSÃO DINÂMICA */}
           <Text
             style={{
               marginTop: 8,
@@ -86,18 +107,18 @@ export default function TelaSobre() {
               color: cores.textoSuave,
             }}
           >
-            Versão {versao}
+            {versaoFinal}
           </Text>
 
-          {/* 🔥 OTA VISÍVEL */}
+          {/* 🔥 DATA */}
           <Text
             style={{
-              marginTop: 4,
+              marginTop: 2,
               fontSize: 12,
               color: cores.textoSecundario,
             }}
           >
-            Atualização {updateId}
+            Atualizado em {dataAtualizacao}
           </Text>
 
           <Text
@@ -107,7 +128,7 @@ export default function TelaSobre() {
               color: cores.textoSecundario,
             }}
           >
-            Aplicativo para gerenciamento de motos, manutenções e alertas.
+            Aplicativo Para Gerenciamento de Motos, Manutenções e Alertas.
           </Text>
         </View>
       </ScrollView>

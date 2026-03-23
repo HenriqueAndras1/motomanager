@@ -64,12 +64,14 @@ npx expo login
 ### 📱 Gerar APK (instalar no celular)
 
 ```bash
-npx eas build -p android --profile preview
+npx eas build -p android --profile production
 ```
+
+> ⚠️ Use sempre `production` para garantir compatibilidade com OTA.
 
 ---
 
-### 🏗️ Gerar versão de produção (AAB)
+### 🏗️ Gerar versão de produção (AAB - Play Store)
 
 ```bash
 npx eas build -p android --profile production
@@ -86,15 +88,16 @@ O app utiliza **Expo Updates**, permitindo atualizar o app sem reinstalar.
 ### 🚀 Enviar atualização
 
 ```bash
-npx eas update
+npx eas update --branch production
 ```
 
 ---
 
-### 📡 Selecionar canal
+### 📡 Canal utilizado
 
-* `preview` → testes internos
-* `production` → versão final
+* `production` → versão oficial do app
+
+> ⚠️ O build e o update devem usar o **mesmo canal**, senão o OTA não funciona corretamente.
 
 ---
 
@@ -104,26 +107,26 @@ npx eas update
 2. Executa:
 
 ```bash
-npx eas update
+npx eas update --branch production
 ```
 
 3. O app no celular:
 
-   * detecta atualização
-   * baixa automaticamente
-   * exibe modal de atualização
-   * exige atualização (modo obrigatório)
-   * reinicia com nova versão
+* verifica atualização automaticamente
+* inicia download
+* exibe tela de carregamento com progresso
+* aplica atualização automaticamente
+* reinicia com a nova versão
 
 ---
 
 ## 🧠 Fluxo de Atualização
 
 * Verificação automática ao abrir o app
-* Download em background
-* Exibição de modal
-* Bloqueio até atualizar
+* Download com barra de progresso (UX melhorada)
+* Aplicação automática
 * Reinício automático
+* Fallback com modal (caso necessário)
 
 ---
 
@@ -155,8 +158,8 @@ O app possui sistema de:
 
 * Verificação automática de atualização
 * Bloqueio de uso em versões antigas
-* Modal profissional
-* Sem opção de ignorar atualização
+* Atualização forçada quando necessário
+* Integração com APK externo
 
 ---
 
@@ -184,13 +187,14 @@ O app possui sistema de:
 
 ## ⚡ Dicas importantes
 
-* Sempre testar antes de rodar:
+* Sempre testar OTA após alterações:
 
 ```bash
-npx eas update
+npx eas update --branch production
 ```
 
 * OTA NÃO altera código nativo
 * Para mudanças grandes, gere novo APK
+* Após alterar `runtimeVersion`, é obrigatório gerar novo build
 
 ---

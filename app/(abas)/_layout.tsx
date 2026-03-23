@@ -13,16 +13,29 @@ export default function LayoutAbas() {
         headerShown: false,
         tabBarActiveTintColor: cores.primaria,
         tabBarInactiveTintColor: cores.textoSuave,
+
         tabBarStyle: {
           backgroundColor: cores.fundo,
           borderTopColor: cores.borda,
-          height: 64 + insets.bottom,
-          paddingTop: 6,
-          paddingBottom: Math.max(insets.bottom, 8),
+          height: 80 + insets.bottom,
+          paddingTop: 8,
+          paddingBottom: insets.bottom + 12,
+
+          // 🔥 NOVO (corrige deslocamento)
+          paddingHorizontal: 0,
         },
+
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: "600",
+          marginTop: 2,
+        },
+
+        // 🔥 CORREÇÃO PRINCIPAL
+        tabBarItemStyle: {
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
         },
       }}
     >

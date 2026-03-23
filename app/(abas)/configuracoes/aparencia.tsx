@@ -21,27 +21,28 @@ export default function TelaAparencia() {
           paddingBottom: 24,
         }}
       >
-        {/* HEADER COM VOLTAR */}
+        {/* 🔥 HEADER PADRÃO */}
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "center",
+            justifyContent: "space-between",
+            marginBottom: 24,
           }}
         >
           <TouchableOpacity
-            onPress={() => router.replace("/configuracoes")}
             style={{
-              position: "absolute",
-              left: 0,
-              padding: 8,
+              height: 40,
+              width: 40,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 999,
+              backgroundColor: cores.fundoCard,
             }}
+            onPress={() => router.back()}
+            activeOpacity={0.8}
           >
-            <Ionicons
-              name="chevron-back"
-              size={24}
-              color={cores.texto}
-            />
+            <Ionicons name="arrow-back" size={22} color={cores.texto} />
           </TouchableOpacity>
 
           <Text
@@ -53,12 +54,15 @@ export default function TelaAparencia() {
           >
             Aparência
           </Text>
+
+          {/* 🔥 espaço pra centralizar */}
+          <View style={{ height: 40, width: 40 }} />
         </View>
 
         {/* CARD */}
         <View
           style={{
-            marginTop: 32,
+            marginTop: 8,
             borderRadius: 16,
             borderWidth: 1,
             borderColor: cores.borda,

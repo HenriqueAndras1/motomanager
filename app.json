@@ -59,12 +59,12 @@
 
     "owner": "henrique_andras",
 
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
 
     "updates": {
-      "url": "https://u.expo.dev/b7c63c8c-5cbb-4759-b929-3d6d122631a1"
+      "url": "https://u.expo.dev/b7c63c8c-5cbb-4759-b929-3d6d122631a1",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
     }
   }
 }
