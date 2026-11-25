@@ -1,3 +1,4 @@
+
 import { Tabs, router } from "expo-router";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -20,8 +21,6 @@ export default function LayoutAbas() {
           height: 80 + insets.bottom,
           paddingTop: 8,
           paddingBottom: insets.bottom + 12,
-
-          // 🔥 NOVO (corrige deslocamento)
           paddingHorizontal: 0,
         },
 
@@ -31,7 +30,6 @@ export default function LayoutAbas() {
           marginTop: 2,
         },
 
-        // 🔥 CORREÇÃO PRINCIPAL
         tabBarItemStyle: {
           flex: 1,
           justifyContent: "center",
@@ -44,7 +42,11 @@ export default function LayoutAbas() {
         options={{
           title: "Moto",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="motorbike" size={size} color={color} />
+            <MaterialCommunityIcons
+              name="motorbike"
+              size={size}
+              color={color == null ? undefined : String(color)}
+            />
           ),
         }}
       />
@@ -54,7 +56,11 @@ export default function LayoutAbas() {
         options={{
           title: "Manutenções",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="wrench" size={size} color={color} />
+            <MaterialCommunityIcons
+              name="wrench"
+              size={size}
+              color={color == null ? undefined : String(color)}
+            />
           ),
         }}
       />
@@ -64,7 +70,11 @@ export default function LayoutAbas() {
         options={{
           title: "Alertas",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="notifications" size={size} color={color} />
+            <Ionicons
+              name="notifications"
+              size={size}
+              color={color == null ? undefined : String(color)}
+            />
           ),
         }}
       />
@@ -74,7 +84,11 @@ export default function LayoutAbas() {
         options={{
           title: "Configurações",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings" size={size} color={color} />
+            <Ionicons
+              name="settings"
+              size={size}
+              color={color == null ? undefined : String(color)}
+            />
           ),
         }}
         listeners={{
